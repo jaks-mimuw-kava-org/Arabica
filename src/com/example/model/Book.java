@@ -1,4 +1,4 @@
-package com.kava.container.prod.model;
+package com.example.model;
 
 import static java.lang.String.format;
 

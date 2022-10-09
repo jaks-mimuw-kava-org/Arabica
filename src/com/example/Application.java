@@ -1,6 +1,6 @@
-package com.kava.container;
+package com.example;
 
-import com.kava.container.prod.RealServlet;
+import com.kava.container.ServletContainer;
 
 public class Application {
     public static void main(String[] args) throws Exception {

@@ -5,25 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e0bc28b5-369a-48c9-b083-74f62f823286" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jpa-buddy.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ServletContainer.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/Application.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/HttpClientHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/ServletContainer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/http/KavaHttpRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/http/KavaHttpResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/http/Method.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/prod/RealServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/prod/model/Book.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/servlet/KavaMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/servlet/KavaServlet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/com/kava/container/servlet/KavaServletURI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/kava/container/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/example/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/kava/container/prod/RealServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/example/RealServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/kava/container/prod/model/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/example/model/Book.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,25 +39,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.example" />
+    </key>
+  </component>
   <component name="RunManager" selected="Application.Application">
     <configuration name="Application" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.kava.container.Application" />
+      <option name="MAIN_CLASS_NAME" value="com.example.Application" />
       <module name="ServletContainer" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.kava.container.*" />
+          <option name="PATTERN" value="com.example.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -85,7 +79,7 @@
       <module name="ServletContainer" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.kava.container.*" />
+          <option name="PATTERN" value="com.example.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -109,7 +103,8 @@
       <option name="presentableId" value="Default" />
       <updated>1665166017477</updated>
       <workItem from="1665166018988" duration="7239000" />
-      <workItem from="1665241287789" duration="7322000" />
+      <workItem from="1665241287789" duration="8614000" />
+      <workItem from="1665319015761" duration="160000" />
     </task>
     <servers />
   </component>
@@ -120,12 +115,12 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/com/kava/container/prod/RealServlet.java</url>
+          <url>file://$PROJECT_DIR$/src/com/example/RealServlet.java</url>
           <line>56</line>
           <option name="timeStamp" value="19" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/com/kava/container/prod/RealServlet.java</url>
+          <url>file://$PROJECT_DIR$/src/com/example/RealServlet.java</url>
           <line>44</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>

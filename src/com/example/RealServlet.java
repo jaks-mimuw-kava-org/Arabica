@@ -1,8 +1,8 @@
-package com.kava.container.prod;
+package com.example;
 
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
-import com.kava.container.prod.model.Book;
+import com.example.model.Book;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
 
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.kava.container.prod.model.Book.quote;
+import static com.example.model.Book.quote;
 
 @KavaServletURI("/library")
 public class RealServlet extends KavaServlet {
