@@ -37,11 +37,17 @@ public class ServletContainer {
         }
     }
 
-    public void run() throws IOException {
+    public void run() {
         logger.info("Starting server at port: " + this.socket.getLocalPort());
         while (true) {
-            var client = this.socket.accept();
-            this.executorService.submit(new HttpClientHandler(client, servlets));
+            try {
+                var client = this.socket.accept();
+                this.executorService.submit(new HttpClientHandler(client, servlets));
+            }
+            catch (IOException e) {
+                logger.error("Exception was caught. Stopping server. " + e.getMessage());
+                break;
+            }
         }
     }
 }

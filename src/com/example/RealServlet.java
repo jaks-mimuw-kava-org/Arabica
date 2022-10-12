@@ -15,10 +15,7 @@ import static com.example.model.Book.quote;
 @KavaServletURI("/library")
 public class RealServlet extends KavaServlet {
 
-    private final List<Book> books = new ArrayList<>(List.of(
-            new Book("abc123", "adam"),
-            new Book("cba321", "eva")
-    ));
+    private final List<Book> books = new ArrayList<>();
 
     @Override
     public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
