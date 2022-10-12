@@ -2,6 +2,8 @@ package com.kava.container;
 
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
+import com.kava.container.logger.Logger;
+import com.kava.container.logger.LoggerFactory;
 import com.kava.container.servlet.KavaServlet;
 
 import java.io.*;
@@ -13,6 +15,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class HttpClientHandler implements Runnable {
+
+    private final Logger logger = LoggerFactory.getLogger(HttpClientHandler.class);
 
     private static final Pattern HTTP_FIRST_LINE = Pattern.compile("([A-Z]+) ([^ ]+) ([^ ]+)");
     private final Socket client;
@@ -55,7 +59,10 @@ public class HttpClientHandler implements Runnable {
             try {
                 var kavaHttpRequest = new KavaHttpRequest(method, url, version, body);
                 var kavaHttpResponse = new KavaHttpResponse();
+
+                logger.info("Starting request: " + method + " " + url);
                 processRequest(kavaHttpRequest, kavaHttpResponse);
+                logger.info("Ending request: " + kavaHttpResponse.statusCode());
 
                 output.write(String.format(
                         "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n\r\n%s",

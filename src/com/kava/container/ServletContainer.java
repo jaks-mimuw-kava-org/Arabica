@@ -1,5 +1,7 @@
 package com.kava.container;
 
+import com.kava.container.logger.Logger;
+import com.kava.container.logger.LoggerFactory;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
 
@@ -12,6 +14,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ServletContainer {
+
+    private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
+
     private final ServerSocket socket;
 
     private final ExecutorService executorService;
@@ -33,6 +38,7 @@ public class ServletContainer {
     }
 
     public void run() throws IOException {
+        logger.info("Starting server at port: " + this.socket.getLocalPort());
         while (true) {
             var client = this.socket.accept();
             this.executorService.submit(new HttpClientHandler(client, servlets));

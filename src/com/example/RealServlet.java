@@ -1,8 +1,8 @@
 package com.example;
 
+import com.example.model.Book;
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
-import com.example.model.Book;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
 
