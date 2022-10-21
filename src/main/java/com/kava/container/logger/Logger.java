@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
+import static java.lang.String.format;
+
 public class Logger {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -55,7 +57,7 @@ public class Logger {
     }
 
     private void printParsed(Level level, String message, Object... args) {
-        print(String.format(message, args), level);
+        print(format(message, args), level);
     }
 
     public void debug(String message, Object... args) {
@@ -68,6 +70,10 @@ public class Logger {
 
     public void error(String message, Object... args) {
         printParsed(Level.ERROR, message, args);
+    }
+
+    public void error(Exception e, String message, Object... args) {
+        printParsed(Level.ERROR, message + ": " + e.getMessage(), args);
     }
 
     public void warning(String message, Object... args) {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.model.Book.quote;
+import static java.lang.String.format;
 
 @KavaServletURI("/library")
 public class RealServlet extends KavaServlet {
@@ -23,7 +24,7 @@ public class RealServlet extends KavaServlet {
         response.setRequest(request);
 
         String allBooks = books.stream()
-                .map(book -> String.format("<li>[%s] <b>%s</b></li>", book.author(), book.title()))
+                .map(book -> format("<li>[%s] <b>%s</b></li>", book.author(), book.title()))
                 .collect(Collectors.joining());
 
         String form = "<form method=\"post\">" +
@@ -34,7 +35,7 @@ public class RealServlet extends KavaServlet {
                 "<input type=\"submit\" value=\"Submit\"><br>" +
                 "</form>";
 
-        response.setBody(String.format("<h2>Books:</h2><ul>%s</ul>%s", allBooks, form));
+        response.setBody(format("<h2>Books:</h2><ul>%s</ul>%s", allBooks, form));
     }
 
     @Override

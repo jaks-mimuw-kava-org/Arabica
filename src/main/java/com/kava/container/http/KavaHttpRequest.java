@@ -6,7 +6,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Optional;
 
 public class KavaHttpRequest extends HttpRequest {
@@ -16,7 +15,9 @@ public class KavaHttpRequest extends HttpRequest {
 
     private final String body;
 
-    public KavaHttpRequest(String method, String uri, String version, String body) throws URISyntaxException {
+    private final HttpHeaders httpHeaders;
+
+    public KavaHttpRequest(String method, String uri, String version, String body, HttpHeaders headers) throws URISyntaxException {
         this.method = Method.of(method);
         this.uri = new URI(uri);
         this.version = switch (version) {
@@ -28,6 +29,7 @@ public class KavaHttpRequest extends HttpRequest {
                 yield null;
         };
         this.body = body;
+        this.httpHeaders = headers;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class KavaHttpRequest extends HttpRequest {
 
     @Override
     public HttpHeaders headers() {
-        return HttpHeaders.of(new HashMap<>(), (s, s2) -> true);
+        return this.httpHeaders;
     }
 
     public String body() {
