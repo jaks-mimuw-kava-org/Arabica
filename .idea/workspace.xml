@@ -5,13 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e0bc28b5-369a-48c9-b083-74f62f823286" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/example/RealServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/example/RealServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/kava/container/ServletContainer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/kava/container/ServletContainer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -30,6 +35,9 @@
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="2" />
   </component>
   <component name="ProjectId" id="2Fokqmqpf0m7zaOzsFFLzfoSYw1" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -104,6 +112,7 @@
       <workItem from="1665241287789" duration="8614000" />
       <workItem from="1665319015761" duration="509000" />
       <workItem from="1665415201535" duration="383000" />
+      <workItem from="1666362670585" duration="301000" />
     </task>
     <servers />
   </component>

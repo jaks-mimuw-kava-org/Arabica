@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 
 public class ServletContainer {
 
+    public static final Integer WORKERS = 10;
+
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
 
     private final ServerSocket socket;
@@ -25,7 +27,7 @@ public class ServletContainer {
 
     public ServletContainer(int port) throws Exception {
         this.socket = new ServerSocket(port);
-        this.executorService = Executors.newFixedThreadPool(10);
+        this.executorService = Executors.newFixedThreadPool(WORKERS);
     }
 
     public void registerServlet(Class<? extends KavaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
