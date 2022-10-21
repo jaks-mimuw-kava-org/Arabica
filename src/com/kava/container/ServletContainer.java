@@ -33,7 +33,7 @@ public class ServletContainer {
         var isServlet = clazz.isAnnotationPresent(KavaServletURI.class);
         if (isServlet) {
             var uri = clazz.getAnnotation(KavaServletURI.class);
-            logger.info("Registering new servler: " + uri.value() + " " + servlet);
+            logger.info("Registering new servlet: " + uri.value() + " " + servlet);
             servlets.put(uri.value(), servlet);
         }
     }
