@@ -4,6 +4,7 @@ import com.kava.container.logger.Logger;
 import com.kava.container.logger.LoggerFactory;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
+import com.kava.container.utils.PropertyLoader;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +16,7 @@ import java.util.concurrent.Executors;
 
 public class ServletContainer {
 
-    public static final Integer WORKERS = 10;
+    public static final Integer WORKERS = PropertyLoader.loadInteger("kava.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
 
@@ -28,6 +29,8 @@ public class ServletContainer {
     public ServletContainer(int port) throws Exception {
         this.socket = new ServerSocket(port);
         this.executorService = Executors.newFixedThreadPool(WORKERS);
+
+        logger.verbose("Created server at port '%d' with '%d' workers", port, WORKERS);
     }
 
     public void registerServlet(Class<? extends KavaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -35,8 +38,11 @@ public class ServletContainer {
         var isServlet = clazz.isAnnotationPresent(KavaServletURI.class);
         if (isServlet) {
             var uri = clazz.getAnnotation(KavaServletURI.class);
-            logger.info("Registering new servlet: " + uri.value() + " " + servlet);
+            logger.info("Registering new servlet: '%s' '%s'", uri.value(), servlet);
             servlets.put(uri.value(), servlet);
+        }
+        else {
+            logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), KavaServletURI.class.getName());
         }
     }
 
@@ -48,7 +54,7 @@ public class ServletContainer {
                 this.executorService.submit(new HttpClientHandler(client, servlets));
             }
             catch (IOException e) {
-                logger.error("Exception was caught. Stopping server. " + e.getMessage());
+                logger.error("Exception was caught. Stopping server. %s", e.getMessage());
                 break;
             }
         }
