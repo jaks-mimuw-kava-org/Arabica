@@ -22,3 +22,24 @@ jobs:
     - name: Build with Maven
       run: |
         mvn clean install
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.1
+      with:
+        name: deploy-jar
+        path: target/*.jar
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create file at server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: tudruj.ddns.net
+        username: kava
+        key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
+        script: |
+          whoami
+
