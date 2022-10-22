@@ -22,3 +22,22 @@ jobs:
     - name: Build with Maven
       run: |
         mvn clean install
+        
+        
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup SSH connection
+      run: |
+        mkdir -p ~/.ssh/key
+        echo $KEY > ~/.ssh/key
+    - name: Create file at server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: tudruj.ddns.net
+        username: kava
+        key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
+        script: |
+          whoami
+
