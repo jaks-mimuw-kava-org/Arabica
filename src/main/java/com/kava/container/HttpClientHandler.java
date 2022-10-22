@@ -55,7 +55,7 @@ public class HttpClientHandler implements Runnable {
                     var header = stringListEntry.getKey();
                     var sb = new StringBuilder();
                     for (var value : stringListEntry.getValue()) {
-                        sb.append(value).append(": ").append(value).append("\r\n");
+                        sb.append(header).append(": ").append(value).append("\r\n");
                     }
                     return sb.toString();
                 }).collect(Collectors.joining());
@@ -70,6 +70,8 @@ public class HttpClientHandler implements Runnable {
 
                 output.flush();
                 client.close();
+
+                logger.debug("Closing connection");
             }
             catch (Exception e) {
                 logger.error(e, "Error while handling client");
