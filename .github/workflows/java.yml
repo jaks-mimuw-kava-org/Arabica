@@ -56,3 +56,12 @@ jobs:
         port: ${{ secrets.PORT }}
         source: "*.jar"
         target: "deployment"
+    - name: Run service
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
+        script: |
+          cd deployment
+          nohup java -jar *.jar &
