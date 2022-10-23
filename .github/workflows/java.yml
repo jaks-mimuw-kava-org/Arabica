@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Create file at server
+    - name: Check server status
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.HOST }}
@@ -42,6 +42,11 @@ jobs:
         key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
         script: |
           whoami
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3.0.1
+      with:
+        name: deploy-jar
+        path: .
     - name: Copy build to server
       uses: appleboy/scp-action@master
       with:
@@ -49,5 +54,5 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
         port: ${{ secrets.PORT }}
-        source: "pom.xml"
-        target: "test"
+        source: "*.jar"
+        target: "deployment"
