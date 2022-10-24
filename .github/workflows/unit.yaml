@@ -1,5 +1,5 @@
 
-name: Java
+name: JUnit workflow - for PRs
 
 on:
   pull_request:

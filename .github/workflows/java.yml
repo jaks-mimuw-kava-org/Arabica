@@ -1,5 +1,5 @@
 
-name: Java
+name: Java build with Maven + service deployment on host
 
 on:
   push:
