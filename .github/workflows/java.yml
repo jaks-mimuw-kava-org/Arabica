@@ -44,8 +44,8 @@ jobs:
           cd deployment
           pkill -9 -f *.jar
           backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
-          mkdir -p backup
-          mv *.jar backup/
+          mkdir -p "$backup"
+          mv *.jar "$backup"/
     - name: Download a Build Artifact
       uses: actions/download-artifact@v3.0.1
       with:
