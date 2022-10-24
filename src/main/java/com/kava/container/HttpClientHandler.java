@@ -143,8 +143,7 @@ public class HttpClientHandler implements Runnable {
             bodyBuilder.append((char) input.read());
         }
 
-        String encodedBody = bodyBuilder.toString();
-        return URLDecoder.decode(encodedBody, StandardCharsets.UTF_8);
+        return bodyBuilder.toString();
     }
 
     private KavaHttpRequest readRequest(BufferedReader input) throws IOException, URISyntaxException {

@@ -1,5 +1,8 @@
 package com.example.model;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import static java.lang.String.format;
 
 public record Book(String title, String author) {
@@ -33,7 +36,10 @@ public record Book(String title, String author) {
             }
         }
 
-        return new Book(title, author);
+        return new Book(
+                title != null ? URLDecoder.decode(title, StandardCharsets.UTF_8) : null,
+                author != null ? URLDecoder.decode(author, StandardCharsets.UTF_8) : null
+        );
     }
 
     private static String removeSpaces(String str) {
