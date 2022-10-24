@@ -46,6 +46,7 @@ jobs:
           backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
           mkdir -p "$backup"
           mv *.jar "$backup"/
+          mv nohup.* "$backup"/
     - name: Download a Build Artifact
       uses: actions/download-artifact@v3.0.1
       with:
