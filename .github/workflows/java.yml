@@ -34,14 +34,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Check server status
+    - name: Stop previous service
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
         script: |
-          whoami
+          cd deployment
+          pkill -9 -f *.jar
+          backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
+          mkdir -p backup
+          mv *.jar backup/
     - name: Download a Build Artifact
       uses: actions/download-artifact@v3.0.1
       with:
@@ -56,7 +60,7 @@ jobs:
         port: ${{ secrets.PORT }}
         source: "*.jar"
         target: "deployment"
-    - name: Run service
+    - name: Run new service
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.HOST }}
