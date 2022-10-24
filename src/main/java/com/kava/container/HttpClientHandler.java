@@ -11,8 +11,10 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -141,7 +143,8 @@ public class HttpClientHandler implements Runnable {
             bodyBuilder.append((char) input.read());
         }
 
-        return bodyBuilder.toString();
+        String encodedBody = bodyBuilder.toString();
+        return URLDecoder.decode(encodedBody, StandardCharsets.UTF_8);
     }
 
     private KavaHttpRequest readRequest(BufferedReader input) throws IOException, URISyntaxException {
