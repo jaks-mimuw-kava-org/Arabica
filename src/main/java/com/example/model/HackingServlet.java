@@ -3,7 +3,9 @@ package com.example.model;
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
 import com.kava.container.servlet.KavaServlet;
+import com.kava.container.servlet.KavaServletURI;
 
+@KavaServletURI("/hacking")
 public class HackingServlet extends KavaServlet {
     @Override
     public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
