@@ -1,11 +1,16 @@
 package com.example.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import static java.lang.String.format;
 
-public record Book(String title, String author) {
+public record Book(String title, String author) implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final int TRUNCATE_NAME = 120;
 
