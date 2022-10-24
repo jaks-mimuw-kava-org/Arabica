@@ -6,6 +6,9 @@ import java.nio.charset.StandardCharsets;
 import static java.lang.String.format;
 
 public record Book(String title, String author) {
+
+    private static final int TRUNCATE_NAME = 120;
+
     public String toJSON() {
         return format("{%s:%s,%s:%s}",
                 quote("title"), title,
@@ -57,5 +60,13 @@ public record Book(String title, String author) {
         }
 
         return sb.toString();
+    }
+
+    public String getTruncatedName() {
+        if (this.title.length() > TRUNCATE_NAME) {
+            return this.title.substring(0, TRUNCATE_NAME) + "...";
+        }
+
+        return this.title;
     }
 }

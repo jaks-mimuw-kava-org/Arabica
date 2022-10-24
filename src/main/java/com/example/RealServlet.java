@@ -24,7 +24,7 @@ public class RealServlet extends KavaServlet {
         response.setRequest(request);
 
         String allBooks = books.stream()
-                .map(book -> format("<li>[%s] <b>%s</b></li>", book.author(), book.title()))
+                .map(book -> format("<li>[%s] <b>%s</b></li>", book.author(), book.getTruncatedName()))
                 .collect(Collectors.joining());
 
         String form = "<form method=\"post\">" +
