@@ -1,5 +1,6 @@
 package com.kava.container;
 
+import com.kava.container.http.HttpVersion;
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
 import com.kava.container.http.Method;
@@ -64,7 +65,7 @@ public class HttpClientHandler implements Runnable {
 
                 output.write(format(
                         "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n%s\r\n\r\n%s",
-                        parseVersion(kavaHttpResponse.version()),
+                        HttpVersion.of(kavaHttpResponse.version()),
                         kavaHttpResponse.statusCode(),
                         "OK",
                         headers,
@@ -85,13 +86,6 @@ public class HttpClientHandler implements Runnable {
             closeIfNotNull(input);
             closeIfNotNull(output);
         }
-    }
-
-    private String parseVersion(HttpClient.Version version) {
-        return switch (version) {
-            case HTTP_1_1 -> "HTTP/1.1";
-            case HTTP_2 -> "HTTP/2";
-        };
     }
 
     private void closeIfNotNull(AutoCloseable closeable) {

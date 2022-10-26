@@ -20,14 +20,7 @@ public class KavaHttpRequest extends HttpRequest {
     public KavaHttpRequest(String method, String uri, String version, String body, HttpHeaders headers) throws URISyntaxException {
         this.method = Method.of(method);
         this.uri = new URI(uri);
-        this.version = switch (version) {
-            case "HTTP/1.1":
-                yield HttpClient.Version.HTTP_1_1;
-            case "HTTP/2":
-                yield HttpClient.Version.HTTP_2;
-            default:
-                yield null;
-        };
+        this.version = HttpVersion.of(version);
         this.body = body;
         this.httpHeaders = headers;
     }

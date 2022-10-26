@@ -63,6 +63,6 @@ public class KavaHttpResponse implements HttpResponse<String> {
 
     @Override
     public HttpClient.Version version() {
-        return HttpClient.Version.HTTP_1_1;
+        return HttpVersion.getDefault();
     }
 }
