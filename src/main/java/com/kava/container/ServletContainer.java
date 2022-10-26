@@ -46,6 +46,11 @@ public class ServletContainer {
         }
     }
 
+    public void registerIcon(String path) {
+        logger.info("Registering icon: '%s'", path);
+        servlets.put("/favicon.ico", new IconServlet(path));
+    }
+
     public void run() {
         logger.info("Starting server at port: " + this.socket.getLocalPort());
         while (true) {

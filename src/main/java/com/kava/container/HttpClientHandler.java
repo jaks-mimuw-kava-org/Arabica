@@ -64,14 +64,20 @@ public class HttpClientHandler implements Runnable {
                 }).collect(Collectors.joining());
 
                 output.write(format(
-                        "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n%s\r\n\r\n%s",
+                        "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n%s\r\n\r\n",
                         HttpVersion.of(kavaHttpResponse.version()),
                         kavaHttpResponse.statusCode(),
                         "OK",
-                        headers,
-                        kavaHttpResponse.body()));
+                        headers));
 
-                output.flush();
+                if (kavaHttpResponse.hasRawBody()) {
+                    client.getOutputStream().write(kavaHttpResponse.rawBody());
+                    client.getOutputStream().flush();
+                } else {
+                    output.write(kavaHttpResponse.body());
+                    output.flush();
+                }
+
                 client.close();
 
                 logger.debug("Closing connection");
