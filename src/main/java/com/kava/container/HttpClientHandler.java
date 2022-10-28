@@ -64,7 +64,7 @@ public class HttpClientHandler implements Runnable {
                 }).collect(Collectors.joining());
 
                 output.write(format(
-                        "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n%s\r\n\r\n",
+                        "%s %d %s\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n%s\r\n\r\n",
                         HttpVersion.of(kavaHttpResponse.version()),
                         kavaHttpResponse.statusCode(),
                         "OK",
@@ -78,7 +78,7 @@ public class HttpClientHandler implements Runnable {
                     output.flush();
                 }
 
-                client.close();
+                // client.close();
 
                 logger.debug("Closing connection");
             }
