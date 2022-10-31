@@ -1,6 +1,6 @@
-version: '2.4'
+version: '3.8'
 services:
-  web:
+  servlets:
     image: kava:latest
     build:
       context: .
