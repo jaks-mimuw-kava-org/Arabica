@@ -3,17 +3,17 @@ package com.kava.container;
 import com.kava.container.http.HttpVersion;
 import com.kava.container.http.KavaHttpRequest;
 import com.kava.container.http.KavaHttpResponse;
-import com.kava.container.http.Method;
 import com.kava.container.logger.Logger;
 import com.kava.container.logger.LoggerFactory;
 import com.kava.container.servlet.KavaServlet;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -37,39 +37,52 @@ public class HttpClientHandler implements Runnable {
         this.servlets = servlets;
     }
 
+    private void sendMessage(OutputStream outputStream, String message) throws IOException {
+        outputStream.write(message.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void sendMessage(OutputStream outputStream, byte[] message) throws IOException {
+        outputStream.write(message);
+    }
+
+    private String joinHeaders(HttpHeaders headers) {
+        return headers.map().entrySet().stream()
+                .map(entry -> format("%s: %s", entry.getKey(), String.join(", ", entry.getValue())))
+                .collect(Collectors.joining("\r\n"));
+    }
+
     @Override
     public void run() {
         BufferedReader input = null;
-        BufferedWriter output = null;
+        OutputStream output = null;
         try {
             input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            output = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+            output = client.getOutputStream();
 
             try {
                 var kavaHttpRequest = readRequest(input);
                 var kavaHttpResponse = new KavaHttpResponse();
+                kavaHttpResponse.modifyHeaders().put("Content-Type", List.of("text/html"));
+                kavaHttpResponse.modifyHeaders().put("Connection", List.of("keep-alive"));
 
                 logger.info("Starting request: " + kavaHttpRequest.method() + " " + kavaHttpRequest.uri());
                 processRequest(kavaHttpRequest, kavaHttpResponse);
                 logger.info("Ending request: " + kavaHttpResponse.statusCode());
 
-                // TODO: refactor - make it work for now
-                String headers = kavaHttpResponse.headers().map().entrySet().stream().map(stringListEntry -> {
-                    var header = stringListEntry.getKey();
-                    var sb = new StringBuilder();
-                    for (var value : stringListEntry.getValue()) {
-                        sb.append(header).append(": ").append(value).append("\r\n");
-                    }
-                    return sb.toString();
-                }).collect(Collectors.joining());
+                String headers = joinHeaders(kavaHttpResponse.headers());
 
-                output.write(format(
-                        "%s %d %s\r\nConnection: close\r\nContent-Type: text/html\r\n%s\r\n\r\n%s",
+                sendMessage(output, format(
+                        "%s %d %s\r\n%s\r\n",
                         HttpVersion.of(kavaHttpResponse.version()),
                         kavaHttpResponse.statusCode(),
                         "OK",
-                        headers,
-                        kavaHttpResponse.body()));
+                        headers));
+
+                if (kavaHttpResponse.hasRawBody()) {
+                    sendMessage(output, kavaHttpResponse.rawBody());
+                } else if (kavaHttpResponse.hasBody()) {
+                    sendMessage(output, kavaHttpResponse.body());
+                }
 
                 output.flush();
                 client.close();
@@ -82,19 +95,6 @@ public class HttpClientHandler implements Runnable {
         }
         catch (IOException e) {
             logger.error(e, "I don't think we really care.");
-        } finally {
-            closeIfNotNull(input);
-            closeIfNotNull(output);
-        }
-    }
-
-    private void closeIfNotNull(AutoCloseable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (Exception e) {
-                logger.error(e, "Oh my god, total disaster! Like we care at all.");
-            }
         }
     }
 

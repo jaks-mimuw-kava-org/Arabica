@@ -7,12 +7,18 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class KavaHttpResponse implements HttpResponse<String> {
     private int statusCode;
     private HttpRequest request;
     private String body;
+
+    private byte[] rawBody;
+
+    private final Map<String, List<String>> headers = new HashMap<>();
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
@@ -24,6 +30,10 @@ public class KavaHttpResponse implements HttpResponse<String> {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public void setRawBody(byte[] rawBody) {
+        this.rawBody = rawBody;
     }
 
     @Override
@@ -43,12 +53,28 @@ public class KavaHttpResponse implements HttpResponse<String> {
 
     @Override
     public HttpHeaders headers() {
-        return HttpHeaders.of(new HashMap<>(), (s, s2) -> true);
+        return HttpHeaders.of(headers, (s, s2) -> true);
+    }
+
+    public Map<String, List<String>> modifyHeaders() {
+        return this.headers;
     }
 
     @Override
     public String body() {
         return this.body;
+    }
+
+    public byte[] rawBody() {
+        return this.rawBody;
+    }
+
+    public boolean hasRawBody() {
+        return this.rawBody != null;
+    }
+
+    public boolean hasBody() {
+        return this.body != null;
     }
 
     @Override

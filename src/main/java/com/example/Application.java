@@ -8,6 +8,7 @@ public class Application {
         container.registerServlet(LibraryServlet.class);
         container.registerServlet(HelloWorld.class);
         container.registerServlet(KavaExplained.class);
+        container.registerIcon("static/favicon.ico");
         container.run();
     }
 }
