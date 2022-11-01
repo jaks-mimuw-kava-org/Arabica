@@ -72,7 +72,7 @@ public class HttpClientHandler implements Runnable {
                 String headers = joinHeaders(kavaHttpResponse.headers());
 
                 sendMessage(output, format(
-                        "%s %d %s\r\n%s\r\n",
+                        "%s %d %s\r\n%s\r\n\r\n",
                         HttpVersion.of(kavaHttpResponse.version()),
                         kavaHttpResponse.statusCode(),
                         "OK",
