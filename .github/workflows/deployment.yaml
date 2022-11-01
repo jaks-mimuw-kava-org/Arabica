@@ -15,9 +15,10 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
         script: |
+          process_name="kava0developers/kava:latest"
           mkdir -p deployment-docker
           cd deployment-docker
-          pkill -9 -f "kava0developers/kava:latest"
+          if pgrep "$process_name"; then pkill -9 -f "$process_name"; fi
           backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
           mkdir -p "$backup"
           mv nohup.* "$backup"/
