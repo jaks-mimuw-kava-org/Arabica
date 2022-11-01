@@ -6,6 +6,8 @@ on:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
+    steps:
     - name: Run new service
       uses: appleboy/ssh-action@v0.1.5
       with:
