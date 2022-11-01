@@ -1,0 +1,22 @@
+
+name: Run latest Docker image on the server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+      - name: Run new service
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
+          script: |
+            mkdir -p deployment-docker
+            cd deployment-docker
+            pkill -9 -f "docker run kava0developers/kava:latest"
+            backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
+            mkdir -p "$backup"
+            mv nohup.* "$backup"/
+            nohup docker run kava0developers/kava:latest >nohup.out 2>nohup.err </dev/null & 
