@@ -17,8 +17,8 @@ jobs:
         script: |
           mkdir -p deployment-docker
           cd deployment-docker
-          pkill -9 -f "docker run kava0developers/kava:latest"
+          pkill -9 -f "kava0developers/kava:latest"
           backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
           mkdir -p "$backup"
           mv nohup.* "$backup"/
-          nohup docker run kava0developers/kava:latest >nohup.out 2>nohup.err </dev/null & 
+          nohup docker run -p 0.0.0.0:4080:8080/tcp kava0developers/kava:latest >nohup.out 2>nohup.err </dev/null & 
