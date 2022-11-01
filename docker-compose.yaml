@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  servlets:
+    image: kava:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4080:8080"
