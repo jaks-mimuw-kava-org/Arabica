@@ -73,6 +73,10 @@ public class KavaHttpResponse implements HttpResponse<String> {
         return this.rawBody != null;
     }
 
+    public boolean hasBody() {
+        return this.body != null;
+    }
+
     @Override
     public Optional<SSLSession> sslSession() {
         return Optional.empty();

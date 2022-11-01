@@ -27,7 +27,7 @@ public class IconServlet extends KavaServlet {
         response.setStatusCode(200);
         response.setRequest(request);
 
-        response.modifyHeaders().put("Content-Type", List.of("image/x-icon"));
+        response.modifyHeaders().put("Content-Type", List.of("image/svg+xml"));
     }
 
     @Override
