@@ -17,6 +17,7 @@ jobs:
             mkdir -p deployment-docker
             cd deployment-docker
             docker rm $(docker stop $(docker ps -a -q --filter ancestor=kava0developers/kava:latest --format="{{.ID}}")) || true
+            docker rmi kava0developers/kava || true
             backup=old-$(date +"D%d-%m-%YT%H-%M-%S")
             mkdir -p "$backup"
             mv nohup.* "$backup"/
