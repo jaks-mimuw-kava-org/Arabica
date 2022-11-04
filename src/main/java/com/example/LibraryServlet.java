@@ -7,6 +7,7 @@ import com.kava.container.logger.Logger;
 import com.kava.container.logger.LoggerFactory;
 import com.kava.container.servlet.KavaServlet;
 import com.kava.container.servlet.KavaServletURI;
+import com.kava.container.utils.StaticReader;
 import sun.misc.Signal;
 
 import java.io.*;
@@ -33,13 +34,7 @@ public class LibraryServlet extends KavaServlet {
                 .map(book -> format("<li>[%s] <b>%s</b></li>", book.author(), book.getTruncatedName()))
                 .collect(Collectors.joining());
 
-        String form = "<form method=\"post\">" +
-                "<label for=\"title\">Title:</label><br>" +
-                "<input type=\"text\" name=\"title\" id=\"title\"><br>" +
-                "<label for=\"author\">Author:</label><br>" +
-                "<input type=\"text\" name=\"author\" id=\"author\"><br>" +
-                "<input type=\"submit\" value=\"Submit\"><br>" +
-                "</form>";
+        String form = StaticReader.readFileFromResources("static/book_form.html");
 
         response.setBody(format("<h2>Books:</h2><ul>%s</ul>%s", allBooks, form));
     }

@@ -10,7 +10,7 @@ import com.kava.container.servlet.KavaServletURI;
 public class KavaExplained extends KavaServlet {
     @Override
     public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
-        response.setBody(StaticReader.readFile("static/welcome.html"));
+        response.setBody(StaticReader.readFileFromResources("static/welcome.html"));
         response.setStatusCode(200);
         response.setRequest(request);
     }

@@ -14,7 +14,7 @@ public class IconServlet extends KavaServlet {
     byte[] iconAsBytes;
 
     public IconServlet(String path) {
-        iconAsBytes = StaticReader.readFileAsBytes(path);
+        iconAsBytes = StaticReader.readFileAsBytesFromResources(path);
     }
 
     public IconServlet() {

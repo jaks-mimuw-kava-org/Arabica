@@ -10,7 +10,7 @@ import static java.lang.String.format;
 public record Book(String title, String author) implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 21374206969420L;
 
     private static final int TRUNCATE_NAME = 120;
 
