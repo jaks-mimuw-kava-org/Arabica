@@ -1,6 +1,6 @@
-package com.kava.container.logger;
+package com.kava.arabica.logger;
 
-import com.kava.container.utils.PropertyLoader;
+import com.kava.arabica.utils.PropertyLoader;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ public class Logger {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    public static final String LEVEL_DEFINE = "kava.logger.level";
+    public static final String LEVEL_DEFINE = "arabica.logger.level";
 
     private final String prefix;
     private final PrintStream output = System.out;

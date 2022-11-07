@@ -1,11 +1,11 @@
-package com.kava.container;
+package com.kava.arabica;
 
-import com.kava.container.http.HttpVersion;
-import com.kava.container.http.KavaHttpRequest;
-import com.kava.container.http.KavaHttpResponse;
-import com.kava.container.logger.Logger;
-import com.kava.container.logger.LoggerFactory;
-import com.kava.container.servlet.KavaServlet;
+import com.kava.arabica.http.HttpVersion;
+import com.kava.arabica.http.ArabicaHttpRequest;
+import com.kava.arabica.http.ArabicaHttpResponse;
+import com.kava.arabica.logger.Logger;
+import com.kava.arabica.logger.LoggerFactory;
+import com.kava.arabica.servlet.ArabicaServlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,9 +30,9 @@ public class HttpClientHandler implements Runnable {
     private static final Pattern HTTP_HEADER = Pattern.compile("([^:]+): (.+)");
     private final Socket client;
 
-    private final Map<String, KavaServlet> servlets;
+    private final Map<String, ArabicaServlet> servlets;
 
-    public HttpClientHandler(Socket client, Map<String, KavaServlet> servlets) {
+    public HttpClientHandler(Socket client, Map<String, ArabicaServlet> servlets) {
         this.client = client;
         this.servlets = servlets;
     }
@@ -60,28 +60,28 @@ public class HttpClientHandler implements Runnable {
             output = client.getOutputStream();
 
             try {
-                var kavaHttpRequest = readRequest(input);
-                var kavaHttpResponse = new KavaHttpResponse();
-                kavaHttpResponse.modifyHeaders().put("Content-Type", List.of("text/html"));
-                kavaHttpResponse.modifyHeaders().put("Connection", List.of("keep-alive"));
+                var arabicaHttpRequest = readRequest(input);
+                var arabicaHttpResponse = new ArabicaHttpResponse();
+                arabicaHttpResponse.modifyHeaders().put("Content-Type", List.of("text/html"));
+                arabicaHttpResponse.modifyHeaders().put("Connection", List.of("keep-alive"));
 
-                logger.info("Starting request: " + kavaHttpRequest.method() + " " + kavaHttpRequest.uri());
-                processRequest(kavaHttpRequest, kavaHttpResponse);
-                logger.info("Ending request: " + kavaHttpResponse.statusCode());
+                logger.info("Starting request: " + arabicaHttpRequest.method() + " " + arabicaHttpRequest.uri());
+                processRequest(arabicaHttpRequest, arabicaHttpResponse);
+                logger.info("Ending request: " + arabicaHttpResponse.statusCode());
 
-                String headers = joinHeaders(kavaHttpResponse.headers());
+                String headers = joinHeaders(arabicaHttpResponse.headers());
 
                 sendMessage(output, format(
                         "%s %d %s\r\n%s\r\n\r\n",
-                        HttpVersion.of(kavaHttpResponse.version()),
-                        kavaHttpResponse.statusCode(),
+                        HttpVersion.of(arabicaHttpResponse.version()),
+                        arabicaHttpResponse.statusCode(),
                         "OK",
                         headers));
 
-                if (kavaHttpResponse.hasRawBody()) {
-                    sendMessage(output, kavaHttpResponse.rawBody());
-                } else if (kavaHttpResponse.hasBody()) {
-                    sendMessage(output, kavaHttpResponse.body());
+                if (arabicaHttpResponse.hasRawBody()) {
+                    sendMessage(output, arabicaHttpResponse.rawBody());
+                } else if (arabicaHttpResponse.hasBody()) {
+                    sendMessage(output, arabicaHttpResponse.body());
                 }
 
                 output.flush();
@@ -98,9 +98,9 @@ public class HttpClientHandler implements Runnable {
         }
     }
 
-    private void processRequest(KavaHttpRequest request, KavaHttpResponse response) {
+    private void processRequest(ArabicaHttpRequest request, ArabicaHttpResponse response) {
         try {
-            for (Map.Entry<String, KavaServlet> entry : servlets.entrySet()) {
+            for (Map.Entry<String, ArabicaServlet> entry : servlets.entrySet()) {
                 var uri = entry.getKey();
                 var handler = entry.getValue();
                 if (uri.equals(request.uri().getPath())) {
@@ -140,7 +140,7 @@ public class HttpClientHandler implements Runnable {
         return bodyBuilder.toString();
     }
 
-    private KavaHttpRequest readRequest(BufferedReader input) throws IOException, URISyntaxException {
+    private ArabicaHttpRequest readRequest(BufferedReader input) throws IOException, URISyntaxException {
         var firstLine = readFirstLine(input);
         var headers = new HashMap<String, List<String>>();
 
@@ -158,7 +158,7 @@ public class HttpClientHandler implements Runnable {
 
         String body = readBody(input, headers);
 
-        return new KavaHttpRequest(
+        return new ArabicaHttpRequest(
                 firstLine.method, firstLine.url, firstLine.version, body,
                 HttpHeaders.of(headers, (s, s2) -> true)
         );

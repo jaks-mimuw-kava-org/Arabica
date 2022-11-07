@@ -1,4 +1,4 @@
-package com.kava.container.http;
+package com.kava.arabica.http;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,7 +8,7 @@ import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Optional;
 
-public class KavaHttpRequest extends HttpRequest {
+public class ArabicaHttpRequest extends HttpRequest {
     private final Method method;
     private final URI uri;
     private final HttpClient.Version version;
@@ -17,7 +17,7 @@ public class KavaHttpRequest extends HttpRequest {
 
     private final HttpHeaders httpHeaders;
 
-    public KavaHttpRequest(String method, String uri, String version, String body, HttpHeaders headers) throws URISyntaxException {
+    public ArabicaHttpRequest(String method, String uri, String version, String body, HttpHeaders headers) throws URISyntaxException {
         this.method = Method.of(method);
         this.uri = new URI(uri);
         this.version = HttpVersion.of(version);

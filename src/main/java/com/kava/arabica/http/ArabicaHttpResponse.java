@@ -1,4 +1,4 @@
-package com.kava.container.http;
+package com.kava.arabica.http;
 
 import javax.net.ssl.SSLSession;
 import java.net.URI;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class KavaHttpResponse implements HttpResponse<String> {
+public class ArabicaHttpResponse implements HttpResponse<String> {
     private int statusCode;
     private HttpRequest request;
     private String body;
