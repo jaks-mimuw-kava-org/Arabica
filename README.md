@@ -1,5 +1,8 @@
-# Kava
+# Arabica
 Aleksander Tudruj, Piotr Uznański, Karol Kuźniak, Jacek Ciszewski
+
+## Description
+Arabica is the best base for your coffee you can get. Same here. Arabica is the best Servlet Container for your application.
 
 ## Installation
 Build and run with docker-compose:
