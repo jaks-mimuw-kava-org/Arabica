@@ -1,13 +1,13 @@
 package com.example;
 
 import com.example.model.Book;
-import com.kava.container.http.KavaHttpRequest;
-import com.kava.container.http.KavaHttpResponse;
-import com.kava.container.logger.Logger;
-import com.kava.container.logger.LoggerFactory;
-import com.kava.container.servlet.KavaServlet;
-import com.kava.container.servlet.KavaServletURI;
-import com.kava.container.utils.StaticReader;
+import com.kava.arabica.http.ArabicaHttpRequest;
+import com.kava.arabica.http.ArabicaHttpResponse;
+import com.kava.arabica.logger.Logger;
+import com.kava.arabica.logger.LoggerFactory;
+import com.kava.arabica.servlet.ArabicaServlet;
+import com.kava.arabica.servlet.ArabicaServletURI;
+import com.kava.arabica.utils.StaticReader;
 import sun.misc.Signal;
 
 import java.io.*;
@@ -18,15 +18,15 @@ import java.util.stream.Collectors;
 import static com.example.model.Book.quote;
 import static java.lang.String.format;
 
-@KavaServletURI("/library")
-public class LibraryServlet extends KavaServlet {
+@ArabicaServletURI("/library")
+public class LibraryServlet extends ArabicaServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(LibraryServlet.class);
 
     private List<Book> books = new ArrayList<>();
 
     @Override
-    public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
+    public void doGET(ArabicaHttpRequest request, ArabicaHttpResponse response) {
         response.setStatusCode(200);
         response.setRequest(request);
 
@@ -40,7 +40,7 @@ public class LibraryServlet extends KavaServlet {
     }
 
     @Override
-    public void doPOST(KavaHttpRequest request, KavaHttpResponse response) {
+    public void doPOST(ArabicaHttpRequest request, ArabicaHttpResponse response) {
         var body = request.body();
         String[] kvs = body.split("[&=]");
         StringBuilder json = new StringBuilder("{");

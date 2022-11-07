@@ -1,15 +1,15 @@
-package com.kava.container;
+package com.kava.arabica;
 
-import com.kava.container.http.KavaHttpRequest;
-import com.kava.container.http.KavaHttpResponse;
-import com.kava.container.servlet.KavaServlet;
-import com.kava.container.servlet.KavaServletURI;
-import com.kava.container.utils.StaticReader;
+import com.kava.arabica.http.ArabicaHttpRequest;
+import com.kava.arabica.http.ArabicaHttpResponse;
+import com.kava.arabica.servlet.ArabicaServlet;
+import com.kava.arabica.servlet.ArabicaServletURI;
+import com.kava.arabica.utils.StaticReader;
 
 import java.util.List;
 
-@KavaServletURI("/favicon.ico")
-public class IconServlet extends KavaServlet {
+@ArabicaServletURI("/favicon.ico")
+public class IconServlet extends ArabicaServlet {
 
     byte[] iconAsBytes;
 
@@ -22,7 +22,7 @@ public class IconServlet extends KavaServlet {
     }
 
     @Override
-    public void doGET(KavaHttpRequest request, KavaHttpResponse response) {
+    public void doGET(ArabicaHttpRequest request, ArabicaHttpResponse response) {
         response.setRawBody(iconAsBytes);
         response.setStatusCode(200);
         response.setRequest(request);
@@ -31,7 +31,7 @@ public class IconServlet extends KavaServlet {
     }
 
     @Override
-    public void doPOST(KavaHttpRequest request, KavaHttpResponse response) {
+    public void doPOST(ArabicaHttpRequest request, ArabicaHttpResponse response) {
         throw new UnsupportedOperationException();
     }
 }

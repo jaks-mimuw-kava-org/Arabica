@@ -1,4 +1,4 @@
-package com.kava.container.logger;
+package com.kava.arabica.logger;
 
 public class LoggerFactory {
     public static <T> Logger getLogger(Class<T> clazz) {

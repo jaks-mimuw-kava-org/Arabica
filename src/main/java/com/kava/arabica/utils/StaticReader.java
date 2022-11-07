@@ -1,7 +1,7 @@
-package com.kava.container.utils;
+package com.kava.arabica.utils;
 
-import com.kava.container.logger.Logger;
-import com.kava.container.logger.LoggerFactory;
+import com.kava.arabica.logger.Logger;
+import com.kava.arabica.logger.LoggerFactory;
 
 import java.io.IOException;
 

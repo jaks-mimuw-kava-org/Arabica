@@ -1,4 +1,4 @@
-package com.kava.container.http;
+package com.kava.arabica.http;
 
 import java.util.Arrays;
 

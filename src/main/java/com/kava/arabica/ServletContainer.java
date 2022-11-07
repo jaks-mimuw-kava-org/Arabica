@@ -1,10 +1,10 @@
-package com.kava.container;
+package com.kava.arabica;
 
-import com.kava.container.logger.Logger;
-import com.kava.container.logger.LoggerFactory;
-import com.kava.container.servlet.KavaServlet;
-import com.kava.container.servlet.KavaServletURI;
-import com.kava.container.utils.PropertyLoader;
+import com.kava.arabica.logger.Logger;
+import com.kava.arabica.logger.LoggerFactory;
+import com.kava.arabica.servlet.ArabicaServlet;
+import com.kava.arabica.servlet.ArabicaServletURI;
+import com.kava.arabica.utils.PropertyLoader;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 
 public class ServletContainer {
 
-    public static final Integer WORKERS = PropertyLoader.loadInteger("kava.container.workers", 10);
+    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
 
@@ -24,7 +24,7 @@ public class ServletContainer {
 
     private final ExecutorService executorService;
 
-    private final Map<String, KavaServlet> servlets = new HashMap<>();
+    private final Map<String, ArabicaServlet> servlets = new HashMap<>();
 
     public ServletContainer(int port) throws Exception {
         this.socket = new ServerSocket(port);
@@ -33,16 +33,16 @@ public class ServletContainer {
         logger.verbose("Created server at port '%d' with '%d' workers", port, WORKERS);
     }
 
-    public void registerServlet(Class<? extends KavaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        KavaServlet servlet = clazz.getDeclaredConstructor().newInstance();
-        var isServlet = clazz.isAnnotationPresent(KavaServletURI.class);
+    public void registerServlet(Class<? extends ArabicaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        ArabicaServlet servlet = clazz.getDeclaredConstructor().newInstance();
+        var isServlet = clazz.isAnnotationPresent(ArabicaServletURI.class);
         if (isServlet) {
-            var uri = clazz.getAnnotation(KavaServletURI.class);
+            var uri = clazz.getAnnotation(ArabicaServletURI.class);
             logger.info("Registering new servlet: '%s' '%s'", uri.value(), servlet);
             servlets.put(uri.value(), servlet);
         }
         else {
-            logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), KavaServletURI.class.getName());
+            logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), ArabicaServletURI.class.getName());
         }
     }
 
