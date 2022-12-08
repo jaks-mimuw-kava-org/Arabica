@@ -1,10 +1,10 @@
 package com.example;
 
-import com.kava.arabica.utils.StaticReader;
-import com.kava.arabica.http.ArabicaHttpRequest;
-import com.kava.arabica.http.ArabicaHttpResponse;
-import com.kava.arabica.servlet.ArabicaServlet;
-import com.kava.arabica.servlet.ArabicaServletURI;
+import org.kava.arabica.utils.StaticReader;
+import org.kava.arabica.http.ArabicaHttpRequest;
+import org.kava.arabica.http.ArabicaHttpResponse;
+import org.kava.arabica.servlet.ArabicaServlet;
+import org.kava.arabica.servlet.ArabicaServletURI;
 
 @ArabicaServletURI("/info")
 public class KavaExplained extends ArabicaServlet {

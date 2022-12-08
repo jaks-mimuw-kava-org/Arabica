@@ -1,4 +1,4 @@
-package com.kava.arabica.utils;
+package org.kava.arabica.utils;
 
 import java.util.Optional;
 import java.util.function.Function;

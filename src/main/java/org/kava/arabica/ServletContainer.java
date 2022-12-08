@@ -1,10 +1,10 @@
-package com.kava.arabica;
+package org.kava.arabica;
 
-import com.kava.arabica.logger.Logger;
-import com.kava.arabica.logger.LoggerFactory;
-import com.kava.arabica.servlet.ArabicaServlet;
-import com.kava.arabica.servlet.ArabicaServletURI;
-import com.kava.arabica.utils.PropertyLoader;
+import org.kava.arabica.servlet.ArabicaServletURI;
+import org.kava.lungo.Logger;
+import org.kava.lungo.LoggerFactory;
+import org.kava.arabica.servlet.ArabicaServlet;
+import org.kava.arabica.utils.PropertyLoader;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,7 @@ public class ServletContainer {
         this.socket = new ServerSocket(port);
         this.executorService = Executors.newFixedThreadPool(WORKERS);
 
-        logger.verbose("Created server at port '%d' with '%d' workers", port, WORKERS);
+        logger.trace("Created server at port '%d' with '%d' workers", port, WORKERS);
     }
 
     public void registerServlet(Class<? extends ArabicaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -40,8 +40,7 @@ public class ServletContainer {
             var uri = clazz.getAnnotation(ArabicaServletURI.class);
             logger.info("Registering new servlet: '%s' '%s'", uri.value(), servlet);
             servlets.put(uri.value(), servlet);
-        }
-        else {
+        } else {
             logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), ArabicaServletURI.class.getName());
         }
     }
@@ -57,8 +56,7 @@ public class ServletContainer {
             try {
                 var client = this.socket.accept();
                 this.executorService.submit(new HttpClientHandler(client, servlets));
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 logger.error("Exception was caught. Stopping server. %s", e.getMessage());
                 break;
             }

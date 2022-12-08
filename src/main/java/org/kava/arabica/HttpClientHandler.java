@@ -1,11 +1,11 @@
-package com.kava.arabica;
+package org.kava.arabica;
 
-import com.kava.arabica.http.HttpVersion;
-import com.kava.arabica.http.ArabicaHttpRequest;
-import com.kava.arabica.http.ArabicaHttpResponse;
-import com.kava.arabica.logger.Logger;
-import com.kava.arabica.logger.LoggerFactory;
-import com.kava.arabica.servlet.ArabicaServlet;
+import org.kava.arabica.http.HttpVersion;
+import org.kava.arabica.http.ArabicaHttpRequest;
+import org.kava.arabica.http.ArabicaHttpResponse;
+import org.kava.lungo.Logger;
+import org.kava.lungo.LoggerFactory;
+import org.kava.arabica.servlet.ArabicaServlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -90,11 +90,11 @@ public class HttpClientHandler implements Runnable {
                 logger.debug("Closing connection");
             }
             catch (Exception e) {
-                logger.error(e, "Error while handling client");
+                logger.error("Error while handling client: %s", e.getMessage());
             }
         }
         catch (IOException e) {
-            logger.error(e, "I don't think we really care.");
+            logger.error("I don't think we really care. %s", e.getMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-package com.kava.arabica.http;
+package org.kava.arabica.http;
 
 import java.net.URI;
 import java.net.URISyntaxException;

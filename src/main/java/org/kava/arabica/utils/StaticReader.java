@@ -1,7 +1,7 @@
-package com.kava.arabica.utils;
+package org.kava.arabica.utils;
 
-import com.kava.arabica.logger.Logger;
-import com.kava.arabica.logger.LoggerFactory;
+import org.kava.lungo.Logger;
+import org.kava.lungo.LoggerFactory;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public class StaticReader {
                 return null;
             }
         } catch (IOException e) {
-            logger.error(e, "Cannot open file \"%s\"", pathToFile);
+            logger.error("Cannot open file \"%s\": %s", pathToFile, e.getMessage());
             return null;
         }
     }
@@ -40,7 +40,7 @@ public class StaticReader {
                 return null;
             }
         } catch (IOException e) {
-            logger.error(e, "Cannot open binary file \"%s\"", pathToFile);
+            logger.error("Cannot open binary file \"%s\": %s", pathToFile, e.getMessage());
             return null;
         }
     }

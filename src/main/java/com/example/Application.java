@@ -1,6 +1,6 @@
 package com.example;
 
-import com.kava.arabica.ServletContainer;
+import org.kava.arabica.ServletContainer;
 
 public class Application {
     public static void main(String[] args) throws Exception {
