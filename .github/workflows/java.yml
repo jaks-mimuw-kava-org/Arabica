@@ -24,7 +24,9 @@ jobs:
       uses: actions/upload-artifact@v3.1.1
       with:
         name: deploy-jar
-        path: target/*.jar
+        path: |
+          target/*.jar
+          target/lib/*.jar
 
 
   deploy:
@@ -57,7 +59,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.TUDRUJ_DDNS_SSH_KEY }}
         port: ${{ secrets.PORT }}
-        source: "*.jar"
+        source: "*.jar,lib/*.jar"
         target: "deployment"
     - name: Run new service
       uses: appleboy/ssh-action@v0.1.5
