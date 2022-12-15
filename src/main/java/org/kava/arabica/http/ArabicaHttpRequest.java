@@ -1,5 +1,6 @@
 package org.kava.arabica.http;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -13,11 +14,11 @@ public class ArabicaHttpRequest extends HttpRequest {
     private final URI uri;
     private final HttpClient.Version version;
 
-    private final String body;
+    private final byte[] body;
 
     private final HttpHeaders httpHeaders;
 
-    public ArabicaHttpRequest(String method, String uri, String version, String body, HttpHeaders headers) throws URISyntaxException {
+    public ArabicaHttpRequest(String method, String uri, String version, HttpHeaders headers, byte[] body) throws URISyntaxException {
         this.method = Method.of(method);
         this.uri = new URI(uri);
         this.version = HttpVersion.of(version);
@@ -60,7 +61,12 @@ public class ArabicaHttpRequest extends HttpRequest {
         return this.httpHeaders;
     }
 
-    public String body() {
+    public byte[] body() {
         return body;
+    }
+
+    public String bodyAsString() throws UnsupportedEncodingException {
+        var encoding = httpHeaders.firstValue("Content-Encoding").orElse("UTF-8");
+        return new String(body, encoding);
     }
 }

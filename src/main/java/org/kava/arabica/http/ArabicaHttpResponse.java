@@ -29,10 +29,14 @@ public class ArabicaHttpResponse implements HttpResponse<String> {
     }
 
     public void setBody(String body) {
+        if (body == null) return;
+        headers.put("Content-Length", List.of(String.valueOf(body.length())));
         this.body = body;
     }
 
     public void setRawBody(byte[] rawBody) {
+        if (rawBody == null) return;
+        headers.put("Content-Length", List.of(String.valueOf(rawBody.length)));
         this.rawBody = rawBody;
     }
 
