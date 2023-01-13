@@ -11,8 +11,8 @@ public class Client {
     private boolean sentToBeHandled = false;
 
     public Client(int bufferSize) {
-        input = new CyclicBuffer(bufferSize);
-        output = new CyclicBuffer(bufferSize);
+        input = getBuffer(bufferSize);
+        output = getBuffer(bufferSize);
     }
 
     public CyclicBuffer getInput() {
@@ -49,5 +49,9 @@ public class Client {
 
     public void setSentToBeHandled(boolean sentToBeHandled) {
         this.sentToBeHandled = sentToBeHandled;
+    }
+
+    protected CyclicBuffer getBuffer(int size) {
+        return new CyclicBuffer(size);
     }
 }
