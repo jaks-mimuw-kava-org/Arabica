@@ -51,4 +51,32 @@ class StringFormatterTest {
         String actual = StringFormatter.named(format, args("age", 25, "city", "London", "name", "John"));
         assertEquals(expected, actual);
     }
+
+    @Test
+    @DisplayName("Test wrong argument count in `args`")
+    public void testArgumentCount() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            args("age", 25, "city");
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            args("city");
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            args("age", 25, "city", 20, "abc");
+        });
+    }
+
+    @Test
+    @DisplayName("Test wrong argument type in `args`")
+    public void testArgumentType() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            args("age", 25, 15, 12);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            args(11, 25, "city", 12);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            args(new int[2], 40, "city", 12);
+        });
+    }
 }

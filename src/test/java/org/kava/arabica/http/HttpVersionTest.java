@@ -28,5 +28,7 @@ class HttpVersionTest {
     void testHttpClientVersionToString() {
         assertEquals("HTTP/1.1", HttpVersion.of(HttpClient.Version.HTTP_1_1));
         assertEquals("HTTP/2", HttpVersion.of(HttpClient.Version.HTTP_2));
+        HttpClient.Version nullVersion = null;
+        assertThrows(NullPointerException.class, () -> HttpVersion.of(nullVersion));
     }
 }

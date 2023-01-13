@@ -20,7 +20,7 @@ public class HttpVersion {
         };
     }
 
-    public static String of(HttpClient.Version version) {
+    public static String of(HttpClient.Version version) throws NullPointerException {
         return switch (version) {
             case HTTP_1_1 -> HTTP_1_1;
             case HTTP_2 -> HTTP_2;
