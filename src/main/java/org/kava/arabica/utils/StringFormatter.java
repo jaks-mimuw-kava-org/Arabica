@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class StringFormatter {
     StringFormatter() {}
 
-    public static String format(String template, Map<String, Object> namedArgs) {
+    public static String named(String template, Map<String, Object> namedArgs) {
         StringBuilder format = new StringBuilder(template);
         List<Object> newArgs = new ArrayList<>();
 

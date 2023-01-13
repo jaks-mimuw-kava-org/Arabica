@@ -12,7 +12,7 @@ class StringFormatterTest {
     public void testSingleFormat() {
         String format = "Hello, ${name}!";
         String expected = "Hello, John!";
-        String actual = StringFormatter.format(format, args("name", "John"));
+        String actual = StringFormatter.named(format, args("name", "John"));
         assertEquals(expected, actual);
     }
 
@@ -21,7 +21,7 @@ class StringFormatterTest {
     public void testTwoArgumentsFormat() {
         String format = "Hello, ${name}! You are ${age} years old.";
         String expected = "Hello, John! You are 25 years old.";
-        String actual = StringFormatter.format(format, args("name", "John", "age", 25));
+        String actual = StringFormatter.named(format, args("name", "John", "age", 25));
         assertEquals(expected, actual);
     }
 
@@ -30,7 +30,7 @@ class StringFormatterTest {
     public void testTwoReversedArguments() {
         String format = "Hello, ${name}! You are ${age} years old.";
         String expected = "Hello, John! You are 25 years old.";
-        String actual = StringFormatter.format(format, args("age", 25, "name", "John"));
+        String actual = StringFormatter.named(format, args("age", 25, "name", "John"));
         assertEquals(expected, actual);
     }
 
@@ -39,7 +39,7 @@ class StringFormatterTest {
     public void testThreeArguments() {
         String format = "Hello, ${name}! You are ${age} years old. You live in ${city}.";
         String expected = "Hello, John! You are 25 years old. You live in London.";
-        String actual = StringFormatter.format(format, args("name", "John", "age", 25, "city", "London"));
+        String actual = StringFormatter.named(format, args("name", "John", "age", 25, "city", "London"));
         assertEquals(expected, actual);
     }
 
@@ -48,7 +48,7 @@ class StringFormatterTest {
     public void testThreeShuffledArguments() {
         String format = "Hello, ${name}! You are ${age} years old. You live in ${city}.";
         String expected = "Hello, John! You are 25 years old. You live in London.";
-        String actual = StringFormatter.format(format, args("age", 25, "city", "London", "name", "John"));
+        String actual = StringFormatter.named(format, args("age", 25, "city", "London", "name", "John"));
         assertEquals(expected, actual);
     }
 }
