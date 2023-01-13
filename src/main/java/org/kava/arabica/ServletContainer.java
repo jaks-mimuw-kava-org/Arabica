@@ -11,7 +11,6 @@ import org.kava.arabica.http.HttpVersion;
 import org.kava.arabica.servlet.ArabicaServlet;
 import org.kava.arabica.servlet.ArabicaServletURI;
 import org.kava.arabica.utils.PropertyLoader;
-import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -32,6 +31,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.kava.arabica.utils.StringFormatter.args;
+import static org.kava.arabica.utils.StringFormatter.named;
 
 public class ServletContainer {
 
@@ -77,7 +78,7 @@ public class ServletContainer {
     }
 
 
-    public void start() throws IOException, InterruptedException {
+    public void start() throws IOException {
         setStopped(false);
 
         try (var selector = Selector.open()) {
@@ -154,8 +155,7 @@ public class ServletContainer {
                 });
 
                 client.setSentToBeHandled(true);
-            }
-            else if (client.isHandled() && !client.isRegistered()) {
+            } else if (client.isHandled() && !client.isRegistered()) {
                 channel.register(selector, SelectionKey.OP_WRITE);
             }
         }
@@ -176,7 +176,7 @@ public class ServletContainer {
         response.modifyHeaders().put("Content-Type", List.of("text/html"));
         response.modifyHeaders().put("Connection", List.of("keep-alive"));
 
-        var methodName = "do" + method;
+        var methodName = named("do${method}", args("method", method));
         var handlerClass = servlet.getClass();
         var handlerMethod = Arrays.stream(handlerClass.getMethods())
                 .filter(_method -> _method.getName().equals(methodName))
@@ -187,9 +187,12 @@ public class ServletContainer {
     }
 
     private void writeResponseToBuffer(ArabicaHttpResponse response, CyclicBuffer output) {
-        var CRLF = "\r\n".getBytes();
+        final var CRLF = "\r\n".getBytes();
 
-        var firstLine = String.format("%s %d %s", HttpVersion.of(response.version()), response.statusCode(), "OK");
+        var firstLine = named("${version} ${status} ${code}",
+                args("version", HttpVersion.of(response.version()),
+                        "status", response.statusCode(),
+                        "version", "OK"));
         output.putExtend(firstLine.getBytes());
         output.putExtend(CRLF);
 
