@@ -95,10 +95,10 @@ public class HttpParser {
 
     public void parse(Client client) {
         //noinspection StatementWithEmptyBody
-        while (this.parseInternal(client) && client.getInput().getUsedSpace() > 0) ;
+        while (this.parseSingleInternal(client) && client.getInput().getUsedSpace() > 0) ;
     }
 
-    private boolean parseInternal(Client client) {
+    private boolean parseSingleInternal(Client client) {
         var input = client.getInput();
         byte[] data;
 
