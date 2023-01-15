@@ -43,30 +43,41 @@ public class CyclicBuffer {
         return result;
     }
 
-    public void put(byte b) {
-        var freeSpace = getFreeSpace();
-        if (freeSpace == 0) {
+    private int getFreeSpaceThrowIfCannotPut(int count) throws IllegalStateException {
+        int freeSpace = getFreeSpace();
+        if (freeSpace < count) {
             throw new IllegalStateException("Buffer is full");
         }
+        return freeSpace;
+    }
 
-        buffer[tail] = b;
-        tail = (tail + 1) % buffer.length;
+    public void put(byte b) {
+        int freeSpace = getFreeSpaceThrowIfCannotPut(1);
+
+        putUnsafe(b);
 
         if (freeSpace == 1) {
             full = true;
         }
     }
 
+    private void putUnsafe(byte b) {
+        buffer[tail] = b;
+        tail = (tail + 1) % buffer.length;
+    }
+
     public void put(byte[] data, int length) {
+        int freeSpace = getFreeSpaceThrowIfCannotPut(length);
         for (int i = 0; i < length; i++) {
-            put(data[i]);
+            putUnsafe(data[i]);
+        }
+        if (freeSpace == length) {
+            full = true;
         }
     }
 
     public void put(byte[] bytes) {
-        for (var b : bytes) {
-            put(b);
-        }
+        put(bytes, bytes.length);
     }
 
     public void putExtend(byte[] bytes) {
@@ -75,7 +86,7 @@ public class CyclicBuffer {
 
     public void putExtend(byte[] bytes, int length) {
         while (getFreeSpace() < length) {
-            this.extend(this.buffer.length * 2);
+            this.resize(this.buffer.length * 2);
         }
 
         put(bytes, length);
@@ -104,7 +115,11 @@ public class CyclicBuffer {
         }
     }
 
-    public void extend(int newCapacity) {
+    public void extend(int extension) {
+        resize(this.buffer.length + extension);
+    }
+
+    public void resize(int newCapacity) {
         if (newCapacity < getUsedSpace()) {
             throw new IllegalStateException("New capacity is too small");
         }
