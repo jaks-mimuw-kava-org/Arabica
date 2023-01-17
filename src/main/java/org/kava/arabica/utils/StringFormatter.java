@@ -36,7 +36,10 @@ public class StringFormatter {
             if (!(args[i] instanceof String)) {
                 throw new IllegalArgumentException("Argument at index " + i + " must be a String.");
             }
-            result.put((String) args[i], args[i + 1]);
+            var previous = result.put((String) args[i], args[i + 1]);
+            if (previous != null) {
+                throw new IllegalArgumentException("Duplicate key: " + args[i]);
+            }
         }
 
         return result;

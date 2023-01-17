@@ -22,10 +22,6 @@ public class HttpParser {
     private State state = State.FIRST;
     private Integer _contentLength = null;
 
-    {
-        logger.setLevel(Level.TRACE);
-    }
-
     public void addHeader(String name, String value) {
         headers.computeIfAbsent(name, s -> new ArrayList<>()).add(value);
     }
