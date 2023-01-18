@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.kava.arabica.test.HttpTestCase.noThrow;
+import static org.kava.arabica.test.TestUtils.noThrow;
 
 class ServletContainerTest {
 

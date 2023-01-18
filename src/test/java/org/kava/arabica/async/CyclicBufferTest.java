@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.kava.arabica.test.TestUtils.noThrow;
 
 class CyclicBufferTest {
 
@@ -247,5 +249,37 @@ class CyclicBufferTest {
         var resultArr = new String[3];
         var result = buffer.peak(3, (aByte, integer) -> aByte + "-" + integer.toString(), resultArr);
         assertArrayEquals(new String[]{"1-0", "2-1", "3-2"}, result);
+    }
+
+    @Test
+    void testPeakOverflow() {
+        var buffer = new CyclicBuffer(3);
+        buffer.put(new byte[]{1, 2, 3}, 3);
+        var resultArr = new String[3];
+        assertThrows(IllegalStateException.class, () -> buffer.peak(4, (aByte, integer) -> aByte + "-" + integer.toString(), resultArr));
+    }
+
+    @Test
+    void testPeakResultTooSmall() {
+        var buffer = new CyclicBuffer(3);
+        buffer.put(new byte[]{1, 2, 3}, 3);
+        var resultArr = new String[2];
+        assertThrows(IllegalArgumentException.class, () -> buffer.peak(3, (aByte, integer) -> aByte + "-" + integer.toString(), resultArr));
+    }
+
+    @Test
+    void testBigBuffer() {
+        var buffer = new CyclicBuffer(2048);
+        noThrow(() ->
+                IntStream.generate(() -> 1)
+                        .limit(2048)
+                        .forEach(i -> buffer.put((byte) i))
+        );
+        assertEquals(2048, buffer.getUsedSpace());
+        assertEquals(0, buffer.getFreeSpace());
+        assertEquals(2048, buffer.getCapacity());
+        var resultArr = new String[2048];
+        var result = noThrow(() -> buffer.peak(2048, (aByte, integer) -> aByte + "-" + integer.toString(), resultArr));
+        assertArrayEquals(IntStream.range(0, 2048).mapToObj(i -> 1 + "-" + i).toArray(), result);
     }
 }

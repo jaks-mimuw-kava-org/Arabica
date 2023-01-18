@@ -6,20 +6,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.kava.arabica.test.TestUtils.noThrow;
 import static org.kava.arabica.utils.StringFormatter.args;
 import static org.kava.arabica.utils.StringFormatter.named;
 
 public record HttpTestCase(TestRequest request, TestResponse response) {
-
-    public static <T> T noThrow(ThrowingCallable<T> callable) {
-        AtomicReference<T> result = new AtomicReference<>();
-        assertDoesNotThrow(() -> result.set(callable.call()));
-        return result.get();
-    }
-
-    public static void noThrow(ThrowingRunnable runnable) {
-        assertDoesNotThrow(runnable::run);
-    }
 
     public void run(TestEnvironment env, int clientIndex) {
         var client = env.testClients()[clientIndex];
