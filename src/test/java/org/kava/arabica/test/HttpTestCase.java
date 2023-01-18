@@ -21,8 +21,8 @@ public record HttpTestCase(TestRequest request, TestResponse response) {
         assertDoesNotThrow(runnable::run);
     }
 
-    public void run(TestEnvironment env) {
-        var client = env.testClients()[0];
+    public void run(TestEnvironment env, int clientIndex) {
+        var client = env.testClients()[clientIndex];
         var port = env.port();
 
         { // Sending the request
