@@ -1,5 +1,5 @@
 
-name: JUnit workflow - for PRs
+name: JUnit and Build
 
 on:
   pull_request:
