@@ -1,6 +1,5 @@
 package org.kava.arabica.async;
 
-import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -21,10 +20,6 @@ public class HttpParser {
     private byte[] body;
     private State state = State.FIRST;
     private Integer _contentLength = null;
-
-    {
-        logger.setLevel(Level.TRACE);
-    }
 
     public void addHeader(String name, String value) {
         headers.computeIfAbsent(name, s -> new ArrayList<>()).add(value);
@@ -57,6 +52,7 @@ public class HttpParser {
         return hasBody() ? body.length : 0;
     }
 
+    @SuppressWarnings("unused")
     public Integer getBodyRemainingLength() {
         return getBodyExpectedLength() - bodyLength();
     }
@@ -94,8 +90,9 @@ public class HttpParser {
     }
 
     public void parse(Client client) {
-        //noinspection StatementWithEmptyBody
-        while (this.parseSingleInternal(client) && client.getInput().getUsedSpace() > 0) ;
+        while (this.parseSingleInternal(client) && client.getInput().getUsedSpace() > 0) {
+            logger.debug("Parsing next chunk");
+        }
     }
 
     private boolean parseSingleInternal(Client client) {

@@ -2,6 +2,7 @@ package org.kava.arabica;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import org.kava.arabica.async.Client;
 import org.kava.arabica.async.CyclicBuffer;
 import org.kava.arabica.async.HttpParser;
@@ -10,7 +11,9 @@ import org.kava.arabica.http.ArabicaHttpResponse;
 import org.kava.arabica.http.HttpVersion;
 import org.kava.arabica.servlet.ArabicaServlet;
 import org.kava.arabica.servlet.ArabicaServletURI;
+import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
+import org.kava.arabica.utils.ThrowingRunnable;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -42,22 +45,35 @@ public class ServletContainer {
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
     private final ExecutorService executorService;
     private final Map<String, ArabicaServlet> servlets = new HashMap<>();
-    private final int port;
     @Getter(AccessLevel.PRIVATE)
     private final ReentrantLock lock = new ReentrantLock();
-
+    private final IOThrowingSupplier<Selector> selectorSupplier;
+    private final IOThrowingSupplier<ServerSocketChannel> serverSocketChannelSupplier;
     private final ConcurrentHashMap<SocketChannel, Client> clients = new ConcurrentHashMap<>();
+    @Getter
+    private ThrowingRunnable onStop = null;
+    @Getter
+    private int port;
+    @Setter
+    private ThrowingRunnable onStart = null;
     private volatile boolean stopped = true;
 
-    public ServletContainer(int port) {
+    ServletContainer(int port, IOThrowingSupplier<Selector> selectorSupplier, IOThrowingSupplier<ServerSocketChannel> serverSocketChannelSupplier) {
         this.executorService = Executors.newFixedThreadPool(WORKERS);
         this.port = port;
+        this.selectorSupplier = selectorSupplier;
+        this.serverSocketChannelSupplier = serverSocketChannelSupplier;
 
         logger.trace("Created server at port '%d' with '%d' workers", port, WORKERS);
     }
 
+    @SuppressWarnings("unused")
     public ServletContainer() {
         this(DEFAULT_PORT);
+    }
+
+    public ServletContainer(int port) {
+        this(port, Selector::open, ServerSocketChannel::open);
     }
 
     public void registerServlet(Class<? extends ArabicaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -72,27 +88,33 @@ public class ServletContainer {
         }
     }
 
+    @SuppressWarnings("unused")
     public void registerIcon(String path) {
         logger.info("Registering icon: '%s'", path);
         servlets.put("/favicon.ico", new IconServlet(path));
     }
 
-
     public void start() throws IOException {
         setStopped(false);
 
-        try (var selector = Selector.open()) {
-            try (var channel = ServerSocketChannel.open()) {
+        try (var selector = selectorSupplier.get()) {
+            try (var channel = serverSocketChannelSupplier.get()) {
                 channel.configureBlocking(false);
                 channel.bind(new InetSocketAddress(port));
+                var address = channel.getLocalAddress();
+                this.port = ((InetSocketAddress) address).getPort();
                 channel.register(selector, SelectionKey.OP_ACCEPT);
 
                 logger.info("Server started on port %d", port);
 
+                if (onStart != null) onStart.run();
+                onStop = selector::close;
                 while (!getStopped()) {
                     handleSelectors(selector, channel);
                     parseRequests(selector);
                 }
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
             }
         } finally {
             setStopped(true);
@@ -146,7 +168,7 @@ public class ServletContainer {
                         logger.error("Error handling request: %s %s %s", method, path, version);
                         throw new RuntimeException(e);
                     } catch (RuntimeException e) {
-                        logger.error("EEEEEEError handling request: %s %s %s", method, path, version);
+                        logger.error("Error handling request: %s %s %s", method, path, version);
                         logger.error("%s", e.getMessage());
                         e.printStackTrace();
                         throw e;
@@ -192,7 +214,7 @@ public class ServletContainer {
         var firstLine = named("${version} ${status} ${code}",
                 args("version", HttpVersion.of(response.version()),
                         "status", response.statusCode(),
-                        "version", "OK"));
+                        "code", "OK"));
         output.putExtend(firstLine.getBytes());
         output.putExtend(CRLF);
 
@@ -227,7 +249,7 @@ public class ServletContainer {
     }
 
     private void handleSelectors(Selector selector, ServerSocketChannel channel) throws IOException {
-        if (selector.select() <= 0) {
+        if (selector.select(1000) <= 0) {
             return;
         }
 
@@ -332,7 +354,18 @@ public class ServletContainer {
     }
 
     private void setStopped(boolean stopped) {
-        operateUnderLock(() -> this.stopped = stopped);
+        operateUnderLock(() -> {
+            this.stopped = stopped;
+            if (this.stopped && this.onStop != null) {
+                try {
+                    this.onStop.run();
+                } catch (Throwable e) {
+                    // Quick cast to unmarked exception. Ez.
+                    throw new RuntimeException(e);
+                }
+            }
+            return this.stopped;
+        });
     }
 
     private <T> T operateUnderLock(Supplier<T> supplier) {
