@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/jaks-mimuw-kava-org/Arabica.svg)](https://jitpack.io/#jaks-mimuw-kava-org/Arabica)
+
 # Arabica
 Aleksander Tudruj, Piotr Uznański, Karol Kuźniak, Jacek Ciszewski
 
