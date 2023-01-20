@@ -19,7 +19,7 @@ If you don't have maven installed, you can use `mvnw` script instead of `mvn` co
 - `unit.yaml` - unit tests - on every pull request and commit to master branch
 
 ## Examples
-To see examples of usage, check out [Arabica-examples](#Examples) directory.
+To see examples of usage, check out [Arabica-examples][#Examples] directory.
 
 
 [#Examples]: https://github.com/jaks-mimuw-kava-org/Arabica-examples
