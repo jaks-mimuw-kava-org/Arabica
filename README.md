@@ -2,7 +2,7 @@
 [![JUnit and Build](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml/badge.svg)](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml)
 
 # Arabica
-Aleksander Tudruj, Piotr Uznański, Karol Kuźniak, Jacek Ciszewski
+Aleksander Tudruj, Karol Kuźniak
 
 ## Description
 Arabica is the best base for your coffee you can get. Same here. Arabica is the best Servlet Container for your application.
