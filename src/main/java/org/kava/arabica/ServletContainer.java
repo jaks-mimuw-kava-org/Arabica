@@ -14,7 +14,6 @@ import org.kava.arabica.servlet.ArabicaServletURI;
 import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
 import org.kava.arabica.utils.ThrowingRunnable;
-import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -68,6 +67,7 @@ public class ServletContainer {
         logger.trace("Created server at port '%d' with '%d' workers", port, WORKERS);
     }
 
+    @SuppressWarnings("unused")
     public ServletContainer() {
         this(DEFAULT_PORT);
     }
@@ -88,6 +88,7 @@ public class ServletContainer {
         }
     }
 
+    @SuppressWarnings("unused")
     public void registerIcon(String path) {
         logger.info("Registering icon: '%s'", path);
         servlets.put("/favicon.ico", new IconServlet(path));

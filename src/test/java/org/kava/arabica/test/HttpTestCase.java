@@ -1,11 +1,9 @@
 package org.kava.arabica.test;
 
-import org.kava.arabica.utils.ThrowingRunnable;
-
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.kava.arabica.test.TestUtils.noThrow;
 import static org.kava.arabica.utils.StringFormatter.args;
 import static org.kava.arabica.utils.StringFormatter.named;
@@ -14,7 +12,6 @@ public record HttpTestCase(TestRequest request, TestResponse response) {
 
     public void run(TestEnvironment env, int clientIndex) {
         var client = env.testClients()[clientIndex];
-        var port = env.port();
 
         { // Sending the request
             sendLine(client, named("${method} ${url} ${version}", args(
@@ -79,6 +76,7 @@ public record HttpTestCase(TestRequest request, TestResponse response) {
         }
     }
 
+    @SuppressWarnings("unused")
     public void send(TestClient client, String message) {
         noThrow(() -> client.send(message.getBytes()));
     }
@@ -91,6 +89,7 @@ public record HttpTestCase(TestRequest request, TestResponse response) {
         noThrow(() -> client.send((message + "\r\n").getBytes()));
     }
 
+    @SuppressWarnings("unused")
     public void sendLine(TestClient client, byte[] message) {
         noThrow(() -> {
             client.send(message);

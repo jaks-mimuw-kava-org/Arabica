@@ -5,13 +5,21 @@ Aleksander Tudruj, Piotr Uznański, Karol Kuźniak, Jacek Ciszewski
 Arabica is the best base for your coffee you can get. Same here. Arabica is the best Servlet Container for your application.
 
 ## Installation
-Build and run with docker-compose:
+Build in development mode:
 ```bash
-docker-compose up --build
+mvn clean install -P dev
 ```
+Build in production mode (`-P prod` is default):
+```bash
+mvn clean install
+```
+If you don't have maven installed, you can use `mvnw` script instead of `mvn` command.
 
 ## Actions explanation
-- `unit.yaml` - unit tests - on every pull request
-- `java.yml` - build and run java app using standard way (:8080) - deployed on every push to master
-- `docker.yml` - build and push docker image to docker hub - on every release
-- `deployments.yml` - deploy app to server, but using docker (:4080) - run manually
+- `unit.yaml` - unit tests - on every pull request and commit to master branch
+
+## Examples
+To see examples of usage, check out [Arabica-examples](#Examples) directory.
+
+
+[#Examples]: https://github.com/jaks-mimuw-kava-org/Arabica-examples
