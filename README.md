@@ -1,5 +1,5 @@
 [![](https://jitpack.io/v/jaks-mimuw-kava-org/Arabica.svg)](https://jitpack.io/#jaks-mimuw-kava-org/Arabica)
-[![JUnit workflow - for PRs](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml/badge.svg)](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml)
+[![JUnit and Build](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml/badge.svg)](https://github.com/jaks-mimuw-kava-org/Arabica/actions/workflows/unit.yaml)
 
 # Arabica
 Aleksander Tudruj, Piotr Uznański, Karol Kuźniak, Jacek Ciszewski
