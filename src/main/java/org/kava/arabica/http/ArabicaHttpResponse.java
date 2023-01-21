@@ -1,98 +1,200 @@
 package org.kava.arabica.http;
 
-import javax.net.ssl.SSLSession;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 
-public class ArabicaHttpResponse implements HttpResponse<String> {
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
+
+public class ArabicaHttpResponse implements HttpServletResponse {
+    @Getter
     private int statusCode;
-    private HttpRequest request;
-    private String body;
+    @Getter
+    private String message;
 
-    private byte[] rawBody;
+    @Getter
+    private HttpServletRequest request;
 
-    private final Map<String, List<String>> headers = new HashMap<>();
+    @Getter
+    private byte[] body;
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
+    @Getter
+    private Map<String, List<String>> headers = new HashMap<>();
 
-    public void setRequest(HttpRequest request) {
-        this.request = request;
-    }
-
-    public void setBody(String body) {
-        if (body == null) return;
-        headers.put("Content-Length", List.of(String.valueOf(body.length())));
-        this.body = body;
-    }
-
-    public void setRawBody(byte[] rawBody) {
-        if (rawBody == null) return;
-        headers.put("Content-Length", List.of(String.valueOf(rawBody.length)));
-        this.rawBody = rawBody;
+    @Override
+    public void addCookie(Cookie cookie) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public int statusCode() {
-        return this.statusCode;
+    public boolean containsHeader(String name) {
+        return headers.containsKey(name);
     }
 
     @Override
-    public HttpRequest request() {
-        return this.request;
+    public String encodeURL(String url) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public Optional<HttpResponse<String>> previousResponse() {
-        return Optional.empty();
+    public String encodeRedirectURL(String url) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public HttpHeaders headers() {
-        return HttpHeaders.of(headers, (s, s2) -> true);
-    }
-
-    public Map<String, List<String>> modifyHeaders() {
-        return this.headers;
+    public void sendError(int sc, String msg) throws IOException {
+        this.statusCode = sc;
+        this.message = msg;
     }
 
     @Override
-    public String body() {
-        return this.body;
-    }
-
-    public byte[] rawBody() {
-        return this.rawBody;
-    }
-
-    public boolean hasRawBody() {
-        return this.rawBody != null;
-    }
-
-    public boolean hasBody() {
-        return this.body != null;
+    public void sendError(int sc) throws IOException {
+        this.statusCode = sc;
     }
 
     @Override
-    public Optional<SSLSession> sslSession() {
-        return Optional.empty();
+    public void sendRedirect(String location) throws IOException {
+        this.statusCode = 301;
+        this.message = "Redirect";
+        this.headers.put("Location", List.of(location));
     }
 
     @Override
-    public URI uri() {
-        return this.request.uri();
+    public void setDateHeader(String name, long date) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public HttpClient.Version version() {
-        return HttpVersion.getDefault();
+    public void addDateHeader(String name, long date) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setHeader(String name, String value) {
+        this.headers.put(name, new ArrayList<>(List.of(value)));
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        this.headers.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
+    }
+
+    @Override
+    public void setIntHeader(String name, int value) {
+        this.headers.put(name, new ArrayList<>(List.of(Integer.toString(value))));
+    }
+
+    @Override
+    public void addIntHeader(String name, int value) {
+        this.headers.computeIfAbsent(name, k -> new ArrayList<>()).add(String.valueOf(value));
+    }
+
+    @Override
+    public int getStatus() {
+        return statusCode;
+    }
+
+    @Override
+    public void setStatus(int sc) {
+        this.statusCode = sc;
+    }
+
+    @Override
+    public String getHeader(String name) {
+        return this.headers.get(name).get(0);
+    }
+
+    @Override
+    public Collection<String> getHeaders(String name) {
+        return this.headers.get(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+        return this.headers.keySet();
+    }
+
+    @Override
+    public String getCharacterEncoding() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setCharacterEncoding(String charset) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getContentType() {
+        return this.headers.get("Content-Type").get(0);
+    }
+
+    @Override
+    public void setContentType(String type) {
+        this.headers.put("Content-Type", List.of(type));
+    }
+
+    @Override
+    public ServletOutputStream getOutputStream() throws IOException {
+        return null; // TODO: implement
+    }
+
+    @Override
+    public PrintWriter getWriter() throws IOException {
+        return null; // TODO: implement
+    }
+
+    @Override
+    public void setContentLength(int len) {
+        this.headers.put("Content-Length", List.of(Integer.toString(len)));
+    }
+
+    @Override
+    public void setContentLengthLong(long len) {
+        this.headers.put("Content-Length", List.of(Long.toString(len)));
+    }
+
+    @Override
+    public int getBufferSize() {
+        return 0; // TODO: implement
+    }
+
+    @Override
+    public void setBufferSize(int size) {
+        // TODO: implement
+    }
+
+    @Override
+    public void flushBuffer() throws IOException {
+        // TODO: implement
+    }
+
+    @Override
+    public void resetBuffer() {
+        // TODO: implement
+    }
+
+    @Override
+    public boolean isCommitted() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void reset() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Locale getLocale() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setLocale(Locale loc) {
+        throw new UnsupportedOperationException();
     }
 }
