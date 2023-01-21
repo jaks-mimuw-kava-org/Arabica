@@ -1,5 +1,8 @@
 package org.kava.arabica;
 
+import jakarta.servlet.Servlet;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,8 +12,6 @@ import org.kava.arabica.async.HttpParser;
 import org.kava.arabica.http.ArabicaHttpRequest;
 import org.kava.arabica.http.ArabicaHttpResponse;
 import org.kava.arabica.http.HttpVersion;
-import org.kava.arabica.servlet.ArabicaServlet;
-import org.kava.arabica.servlet.ArabicaServletURI;
 import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
 import org.kava.arabica.utils.ThrowingRunnable;
@@ -44,7 +45,7 @@ public class ServletContainer {
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
     private final ExecutorService executorService;
-    private final Map<String, ArabicaServlet> servlets = new HashMap<>();
+    private final Map<String, Servlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
     private final ReentrantLock lock = new ReentrantLock();
     private final IOThrowingSupplier<Selector> selectorSupplier;
@@ -76,15 +77,22 @@ public class ServletContainer {
         this(port, Selector::open, ServerSocketChannel::open);
     }
 
-    public void registerServlet(Class<? extends ArabicaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        ArabicaServlet servlet = clazz.getDeclaredConstructor().newInstance();
-        var isServlet = clazz.isAnnotationPresent(ArabicaServletURI.class);
+    public void registerServlet(Class<? extends Servlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        var servlet = clazz.getDeclaredConstructor().newInstance();
+        var isServlet = clazz.isAnnotationPresent(WebServlet.class);
         if (isServlet) {
-            var uri = clazz.getAnnotation(ArabicaServletURI.class);
+            var uri = clazz.getAnnotation(WebServlet.class);
             logger.info("Registering new servlet: '%s' '%s'", uri.value(), servlet);
-            servlets.put(uri.value(), servlet);
+            var uris = uri.value();
+            var allUnique = Arrays.stream(uris).noneMatch(servlets::containsKey);
+            if (allUnique) {
+                Arrays.stream(uris).forEach(_uri -> servlets.put(_uri, servlet));
+            } else {
+                throw new IllegalAccessException("Servlet already registered for URI.");
+            }
         } else {
-            logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), ArabicaServletURI.class.getName());
+            logger.error("Servlet '%s' is not annotated with '%s'.", clazz.getName(), WebServlet.class.getName());
+            throw new IllegalArgumentException("Servlet is not annotated with @WebServlet.");
         }
     }
 
@@ -236,7 +244,7 @@ public class ServletContainer {
                 .collect(Collectors.joining("\r\n"));
     }
 
-    private ArabicaHttpRequest generateRequest(HttpParser parser) throws URISyntaxException {
+    private HttpServletRequest generateRequest(HttpParser parser) throws URISyntaxException {
         var method = parser.getMethod();
         var path = parser.getPath();
         var version = parser.getVersion();
@@ -245,10 +253,13 @@ public class ServletContainer {
         var body = parser.getBody();
 
         var parsedHeaders = HttpHeaders.of(headers, (k, v) -> true);
-        return new ArabicaHttpRequest(method, path, version, parsedHeaders, body);
+
+        return new ArabicaHttpRequest(method, path, version, parsedHeaders, body, headers1);
     }
 
     private void handleSelectors(Selector selector, ServerSocketChannel channel) throws IOException {
+        // If data was written, and we missed the opportunity to wake up the selector, we need to do it manually,
+        //  so we time out every 1000ms.
         if (selector.select(1000) <= 0) {
             return;
         }
