@@ -26,8 +26,7 @@ public class IconServlet extends HttpServlet {
     }
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
+    public void init() throws ServletException {
         iconAsBytes = StaticReader.readFileAsBytesFromResources(path);
         if (iconAsBytes == null) {
             throw new ServletException("Could not read icon from resources at path " + path);
