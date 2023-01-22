@@ -119,15 +119,38 @@ public class ServletContainer {
 
                 if (onStart != null) onStart.run();
                 onStop = selector::close;
+                initServlets();
                 while (!getStopped()) {
                     handleSelectors(selector, channel);
                     parseRequests(selector);
                 }
+                destroyServlets();
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
         } finally {
             setStopped(true);
+        }
+    }
+
+    private void destroyServlets() {
+        for (var servlet : servlets.values()) {
+            try {
+                servlet.destroy();
+            } catch (Throwable e) {
+                logger.error("Error while destroying servlet '%s'", servlet);
+            }
+        }
+    }
+
+    private void initServlets() {
+        for (var servlet : servlets.values()) {
+            try {
+                servlet.init();
+            } catch (ServletException e) {
+                logger.error("Failed to initialize servlet '%s'", servlet);
+                throw new RuntimeException(e);
+            }
         }
     }
 
