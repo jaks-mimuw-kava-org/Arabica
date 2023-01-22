@@ -15,7 +15,6 @@ import org.kava.arabica.http.ArabicaHttpResponse;
 import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
 import org.kava.arabica.utils.ThrowingRunnable;
-import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -43,9 +42,6 @@ public class ServletContainer {
     public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
-    {
-        logger.setLevel(Level.TRACE);
-    }
     private final ExecutorService executorService;
     private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
@@ -119,15 +115,38 @@ public class ServletContainer {
 
                 if (onStart != null) onStart.run();
                 onStop = selector::close;
+                initServlets();
                 while (!getStopped()) {
                     handleSelectors(selector, channel);
                     parseRequests(selector);
                 }
+                destroyServlets();
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
         } finally {
             setStopped(true);
+        }
+    }
+
+    private void destroyServlets() {
+        for (var servlet : servlets.values()) {
+            try {
+                servlet.destroy();
+            } catch (Throwable e) {
+                logger.error("Error while destroying servlet '%s'", servlet);
+            }
+        }
+    }
+
+    private void initServlets() {
+        for (var servlet : servlets.values()) {
+            try {
+                servlet.init();
+            } catch (ServletException e) {
+                logger.error("Failed to initialize servlet '%s'", servlet);
+                throw new RuntimeException(e);
+            }
         }
     }
 
