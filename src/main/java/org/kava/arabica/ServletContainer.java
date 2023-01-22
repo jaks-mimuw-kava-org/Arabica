@@ -43,9 +43,6 @@ public class ServletContainer {
     public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
-    {
-        logger.setLevel(Level.TRACE);
-    }
     private final ExecutorService executorService;
     private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
