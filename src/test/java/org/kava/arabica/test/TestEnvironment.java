@@ -1,7 +1,7 @@
 package org.kava.arabica.test;
 
+import jakarta.servlet.http.HttpServlet;
 import org.kava.arabica.ServletContainer;
-import org.kava.arabica.servlet.ArabicaServlet;
 
 import java.io.IOException;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
 
 public record TestEnvironment(ServletContainer servletContainer, CompletableFuture<Boolean> serverTask, TestClient[] testClients, int port) {
-    public static TestEnvironment newEnv(int port, int workersCount, List<Class<? extends ArabicaServlet>> servlets) throws EnvSetupException {
+    public static TestEnvironment newEnv(int port, int workersCount, List<Class<? extends HttpServlet>> servlets) throws EnvSetupException {
         try {
             var servletContainer = new ServletContainer(port);
             for (var servlet : servlets) {

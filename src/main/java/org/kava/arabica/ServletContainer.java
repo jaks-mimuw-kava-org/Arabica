@@ -1,6 +1,6 @@
 package org.kava.arabica;
 
-import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,10 +12,10 @@ import org.kava.arabica.async.CyclicBuffer;
 import org.kava.arabica.async.HttpParser;
 import org.kava.arabica.http.ArabicaHttpRequest;
 import org.kava.arabica.http.ArabicaHttpResponse;
-import org.kava.arabica.http.HttpVersion;
 import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
 import org.kava.arabica.utils.ThrowingRunnable;
+import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -23,10 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
-import java.net.http.HttpHeaders;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +43,9 @@ public class ServletContainer {
     public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
+    {
+        logger.setLevel(Level.TRACE);
+    }
     private final ExecutorService executorService;
     private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
@@ -173,7 +174,7 @@ public class ServletContainer {
                         selector.wakeup();
                         logger.debug("Registered client %s for writing", client);
                     } catch (URISyntaxException | InvocationTargetException | IllegalAccessException |
-                             ClosedChannelException e) {
+                             ServletException | IOException e) {
                         logger.error("Error handling request: %s %s %s", method, path, version);
                         throw new RuntimeException(e);
                     } catch (RuntimeException e) {
@@ -192,8 +193,7 @@ public class ServletContainer {
         }
     }
 
-    private void handleHTTP(HttpParser parser, CyclicBuffer output) throws URISyntaxException, InvocationTargetException, IllegalAccessException {
-        var method = parser.getMethod();
+    private void handleHTTP(HttpParser parser, CyclicBuffer output) throws URISyntaxException, InvocationTargetException, IllegalAccessException, ServletException, IOException {
         var path = parser.getPath();
 
         var servlet = servlets.get(path);
@@ -203,17 +203,11 @@ public class ServletContainer {
         }
 
         var request = generateRequest(parser);
-        var response = new ArabicaHttpResponse();
+        var response = new ArabicaHttpResponse(request);
         response.setContentType("text/html");
         response.addHeader("Connection", "keep-alive");
 
-        var methodName = named("do${method}", args("method", method));
-        var handlerClass = servlet.getClass();
-        var handlerMethod = Arrays.stream(handlerClass.getMethods())
-                .filter(_method -> _method.getName().equalsIgnoreCase(methodName))
-                .findAny().orElseThrow();
-        handlerMethod.setAccessible(true); // The method is protected by default.
-        handlerMethod.invoke(servlet, request, response);
+        servlet.service(request, response);
 
         writeResponseToBuffer(response, output);
     }
@@ -222,7 +216,7 @@ public class ServletContainer {
         final var CRLF = "\r\n".getBytes();
 
         var firstLine = named("${version} ${status} ${code}",
-                args("version", HttpVersion.of(response.getRequest().getProtocol()),
+                args("version", response.getRequest().getProtocol(),
                         "status", response.getStatus(),
                         "code", response.getMessage()));
         output.putExtend(firstLine.getBytes());
@@ -233,11 +227,8 @@ public class ServletContainer {
         output.putExtend(CRLF);
         output.putExtend(CRLF);
 
-        if (response.hasRawBody()) {
-            output.putExtend(response.rawBody());
-        } else if (response.hasBody()) {
-            output.putExtend(response.body().getBytes(StandardCharsets.UTF_8));
-        }
+        var bodyBuffer = response.getArabicaOutputStream().getBuffer();
+        output.putExtend(bodyBuffer.get(bodyBuffer.getUsedSpace()));
     }
 
     private String joinHeaders(Map<String, List<String>> headers) {

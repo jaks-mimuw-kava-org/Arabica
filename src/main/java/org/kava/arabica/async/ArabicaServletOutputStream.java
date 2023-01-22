@@ -2,11 +2,13 @@ package org.kava.arabica.async;
 
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.WriteListener;
+import lombok.Getter;
 
 import java.io.IOException;
 
 public class ArabicaServletOutputStream extends ServletOutputStream {
 
+    @Getter
     private final CyclicBuffer buffer;
 
     public ArabicaServletOutputStream(CyclicBuffer buffer) {

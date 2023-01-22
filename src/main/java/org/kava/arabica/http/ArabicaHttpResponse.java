@@ -107,6 +107,7 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     @Override
     public void setStatus(int sc) {
         this.statusCode = sc;
+        this.message = "OK"; // TODO: get message from status code
     }
 
     @Override
@@ -145,12 +146,16 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     }
 
     @Override
-    public ServletOutputStream getOutputStream() throws IOException {
+    public ServletOutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    public ArabicaServletOutputStream getArabicaOutputStream() {
         return outputStream;
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException {
+    public PrintWriter getWriter() {
         if (writer == null) {
             writer = new PrintWriter(outputStream);
         }

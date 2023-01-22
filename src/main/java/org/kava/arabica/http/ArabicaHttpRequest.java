@@ -256,7 +256,7 @@ public class ArabicaHttpRequest implements HttpServletRequest {
 
     @Override
     public String getProtocol() {
-        return version.name();
+        return HttpVersion.of(version);
     }
 
     @Override

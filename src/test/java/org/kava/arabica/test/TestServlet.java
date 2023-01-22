@@ -1,14 +1,15 @@
 package org.kava.arabica.test;
 
-import org.kava.arabica.http.ArabicaHttpRequest;
-import org.kava.arabica.http.ArabicaHttpResponse;
-import org.kava.arabica.servlet.ArabicaServlet;
-import org.kava.arabica.servlet.ArabicaServletURI;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.List;
+import java.io.IOException;
 
-@ArabicaServletURI("/reverse")
-public class TestServlet extends ArabicaServlet {
+@WebServlet("/reverse")
+public class TestServlet extends HttpServlet {
 
     private void reverse(byte[] arr) {
         int b = 0;
@@ -23,20 +24,22 @@ public class TestServlet extends ArabicaServlet {
     }
 
     @Override
-    public void doGET(ArabicaHttpRequest request, ArabicaHttpResponse response) {
-        var body = request.body();
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        var body = req.getInputStream().readAllBytes();
         reverse(body);
-        response.setRawBody(body);
-        response.modifyHeaders().put("Content-Type", List.of("bytes"));
-        response.setStatusCode(200);
+        resp.getOutputStream().write(body);
+        resp.setContentLength(body.length);
+        resp.setContentType("text/plain");
+        resp.setStatus(200);
     }
 
     @Override
-    public void doPOST(ArabicaHttpRequest request, ArabicaHttpResponse response) {
-        var body = request.body();
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        var body = req.getInputStream().readAllBytes();
         reverse(body);
-        response.setRawBody(body);
-        response.modifyHeaders().put("Content-Type", List.of("bytes"));
-        response.setStatusCode(200);
+        resp.getOutputStream().write(body);
+        resp.setContentLength(body.length);
+        resp.setContentType("text/plain");
+        resp.setStatus(200);
     }
 }
