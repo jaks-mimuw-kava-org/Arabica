@@ -2,6 +2,8 @@ package org.kava.arabica.http;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import org.kava.arabica.async.ArabicaServletInputStream;
+import org.kava.arabica.async.CyclicBuffer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +19,7 @@ public class ArabicaHttpRequest implements HttpServletRequest {
     private final URI uri;
     private final HttpClient.Version version;
 
+    private final ArabicaServletInputStream inputStream;
     private final byte[] body;
 
     private final Map<String, List<String>> headers;
@@ -25,6 +28,7 @@ public class ArabicaHttpRequest implements HttpServletRequest {
         this.method = Method.of(method);
         this.uri = new URI(uri);
         this.version = HttpVersion.of(version);
+        this.inputStream = new ArabicaServletInputStream(CyclicBuffer.of(body));
         this.body = body;
         this.headers = headers;
     }
@@ -227,7 +231,7 @@ public class ArabicaHttpRequest implements HttpServletRequest {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        return null; // TODO: add implementation
+        return inputStream;
     }
 
     @Override

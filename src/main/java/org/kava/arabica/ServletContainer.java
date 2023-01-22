@@ -2,6 +2,7 @@ package org.kava.arabica;
 
 import jakarta.servlet.Servlet;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,7 +46,7 @@ public class ServletContainer {
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
     private final ExecutorService executorService;
-    private final Map<String, Servlet> servlets = new HashMap<>();
+    private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
     private final ReentrantLock lock = new ReentrantLock();
     private final IOThrowingSupplier<Selector> selectorSupplier;
@@ -77,7 +78,7 @@ public class ServletContainer {
         this(port, Selector::open, ServerSocketChannel::open);
     }
 
-    public void registerServlet(Class<? extends Servlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public void registerServlet(Class<? extends HttpServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         var servlet = clazz.getDeclaredConstructor().newInstance();
         var isServlet = clazz.isAnnotationPresent(WebServlet.class);
         if (isServlet) {
@@ -203,14 +204,15 @@ public class ServletContainer {
 
         var request = generateRequest(parser);
         var response = new ArabicaHttpResponse();
-        response.modifyHeaders().put("Content-Type", List.of("text/html"));
-        response.modifyHeaders().put("Connection", List.of("keep-alive"));
+        response.setContentType("text/html");
+        response.addHeader("Connection", "keep-alive");
 
         var methodName = named("do${method}", args("method", method));
         var handlerClass = servlet.getClass();
         var handlerMethod = Arrays.stream(handlerClass.getMethods())
-                .filter(_method -> _method.getName().equals(methodName))
+                .filter(_method -> _method.getName().equalsIgnoreCase(methodName))
                 .findAny().orElseThrow();
+        handlerMethod.setAccessible(true); // The method is protected by default.
         handlerMethod.invoke(servlet, request, response);
 
         writeResponseToBuffer(response, output);
@@ -220,13 +222,13 @@ public class ServletContainer {
         final var CRLF = "\r\n".getBytes();
 
         var firstLine = named("${version} ${status} ${code}",
-                args("version", HttpVersion.of(response.version()),
-                        "status", response.statusCode(),
-                        "code", "OK"));
+                args("version", HttpVersion.of(response.getRequest().getProtocol()),
+                        "status", response.getStatus(),
+                        "code", response.getMessage()));
         output.putExtend(firstLine.getBytes());
         output.putExtend(CRLF);
 
-        var headers = joinHeaders(response.headers());
+        var headers = joinHeaders(response.getHeaders());
         output.putExtend(headers.getBytes());
         output.putExtend(CRLF);
         output.putExtend(CRLF);
@@ -238,8 +240,8 @@ public class ServletContainer {
         }
     }
 
-    private String joinHeaders(HttpHeaders headers) {
-        return headers.map().entrySet().stream()
+    private String joinHeaders(Map<String, List<String>> headers) {
+        return headers.entrySet().stream()
                 .map(entry -> format("%s: %s", entry.getKey(), String.join(", ", entry.getValue())))
                 .collect(Collectors.joining("\r\n"));
     }
@@ -252,9 +254,7 @@ public class ServletContainer {
         var headers = parser.getHeaders();
         var body = parser.getBody();
 
-        var parsedHeaders = HttpHeaders.of(headers, (k, v) -> true);
-
-        return new ArabicaHttpRequest(method, path, version, parsedHeaders, body, headers1);
+        return new ArabicaHttpRequest(method, path, version, headers, body);
     }
 
     private void handleSelectors(Selector selector, ServerSocketChannel channel) throws IOException {

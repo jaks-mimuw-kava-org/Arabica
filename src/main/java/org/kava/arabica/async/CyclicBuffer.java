@@ -17,6 +17,17 @@ public class CyclicBuffer {
         full = false;
     }
 
+    public CyclicBuffer(byte[] buffer) {
+        this.buffer = buffer;
+        head = 0;
+        tail = buffer.length;
+        full = true;
+    }
+
+    public static CyclicBuffer of(byte[] buffer) {
+        return new CyclicBuffer(buffer);
+    }
+
     public int getCapacity() {
         return buffer.length;
     }

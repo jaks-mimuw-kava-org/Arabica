@@ -5,6 +5,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
+import org.kava.arabica.async.ArabicaServletOutputStream;
+import org.kava.arabica.async.CyclicBuffer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,13 +19,17 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     private String message;
 
     @Getter
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
+
+    private final ArabicaServletOutputStream outputStream = new ArabicaServletOutputStream(new CyclicBuffer(1024));
+    private PrintWriter writer = null;
+
+    public ArabicaHttpResponse(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @Getter
-    private byte[] body;
-
-    @Getter
-    private Map<String, List<String>> headers = new HashMap<>();
+    private final Map<String, List<String>> headers = new HashMap<>();
 
     @Override
     public void addCookie(Cookie cookie) {
@@ -140,12 +146,15 @@ public class ArabicaHttpResponse implements HttpServletResponse {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-        return null; // TODO: implement
+        return outputStream;
     }
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        return null; // TODO: implement
+        if (writer == null) {
+            writer = new PrintWriter(outputStream);
+        }
+        return writer;
     }
 
     @Override
