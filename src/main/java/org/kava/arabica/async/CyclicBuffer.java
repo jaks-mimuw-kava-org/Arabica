@@ -18,10 +18,17 @@ public class CyclicBuffer {
     }
 
     public CyclicBuffer(byte[] buffer) {
-        this.buffer = buffer;
-        head = 0;
-        tail = buffer.length;
-        full = true;
+        if (buffer == null || buffer.length == 0) {
+            this.buffer = new byte[1024];
+            head = 0;
+            tail = 0;
+            full = false;
+        } else {
+            this.buffer = buffer;
+            head = 0;
+            tail = buffer.length;
+            full = true;
+        }
     }
 
     public static CyclicBuffer of(byte[] buffer) {
