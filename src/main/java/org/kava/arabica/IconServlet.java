@@ -1,20 +1,24 @@
 package org.kava.arabica;
 
-import org.kava.arabica.http.ArabicaHttpRequest;
-import org.kava.arabica.http.ArabicaHttpResponse;
-import org.kava.arabica.servlet.ArabicaServlet;
-import org.kava.arabica.servlet.ArabicaServletURI;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.kava.arabica.utils.StaticReader;
 
-import java.util.List;
+import java.io.IOException;
 
-@ArabicaServletURI("/favicon.ico")
-public class IconServlet extends ArabicaServlet {
+@WebServlet(name = "IconServlet", urlPatterns = {"/favicon.ico"})
+public class IconServlet extends HttpServlet {
 
     byte[] iconAsBytes;
 
+    private final String path;
+
     public IconServlet(String path) {
-        iconAsBytes = StaticReader.readFileAsBytesFromResources(path);
+        this.path = path;
     }
 
     public IconServlet() {
@@ -22,16 +26,29 @@ public class IconServlet extends ArabicaServlet {
     }
 
     @Override
-    public void doGET(ArabicaHttpRequest request, ArabicaHttpResponse response) {
-        response.setRawBody(iconAsBytes);
-        response.setStatusCode(200);
-        response.setRequest(request);
-
-        response.modifyHeaders().put("Content-Type", List.of("image/svg+xml"));
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        iconAsBytes = StaticReader.readFileAsBytesFromResources(path);
+        if (iconAsBytes == null) {
+            throw new ServletException("Could not read icon from resources at path " + path);
+        }
     }
 
     @Override
-    public void doPOST(ArabicaHttpRequest request, ArabicaHttpResponse response) {
-        throw new UnsupportedOperationException();
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.getOutputStream().write(iconAsBytes);
+        resp.getOutputStream().flush();
+        resp.setContentType("image/svg+xml");
+        resp.setStatus(200);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setStatus(405);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
     }
 }

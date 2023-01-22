@@ -1,10 +1,8 @@
 package org.kava.arabica;
 
 import org.junit.jupiter.api.Test;
-import org.kava.arabica.servlet.ArabicaServlet;
 import org.kava.arabica.test.*;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
@@ -23,7 +21,7 @@ class ServletContainerTest {
                         .method("GET")
                         .url("/reverse")
                         .version("HTTP/1.1")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .header("Content-Length", "13")
                         .body("Hello, world!".getBytes())
                         .build(),
@@ -33,7 +31,7 @@ class ServletContainerTest {
                         .reason("OK")
                         .header("Connection", "keep-alive")
                         .header("Content-Length", "13")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .body("!dlrow ,olleH".getBytes())
                         .build()
         );
@@ -53,7 +51,7 @@ class ServletContainerTest {
                         .method("GET")
                         .url("/reverse")
                         .version("HTTP/1.1")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .header("Content-Length", "13")
                         .body("Hello, world!".getBytes())
                         .build(),
@@ -63,7 +61,7 @@ class ServletContainerTest {
                         .reason("OK")
                         .header("Connection", "keep-alive")
                         .header("Content-Length", "13")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .body("!dlrow ,olleH".getBytes())
                         .build()
         );
@@ -73,7 +71,7 @@ class ServletContainerTest {
                         .method("GET")
                         .url("/reverse")
                         .version("HTTP/1.1")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .header("Content-Length", "13")
                         .body("Hello, world!".getBytes())
                         .build(),
@@ -83,7 +81,7 @@ class ServletContainerTest {
                         .reason("OK")
                         .header("Connection", "keep-alive")
                         .header("Content-Length", "13")
-                        .header("Content-Type", "bytes")
+                        .header("Content-Type", "text/plain")
                         .body("!dlrow ,olleH".getBytes())
                         .build()
         );

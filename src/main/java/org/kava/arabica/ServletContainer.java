@@ -1,5 +1,9 @@
 package org.kava.arabica;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,12 +12,10 @@ import org.kava.arabica.async.CyclicBuffer;
 import org.kava.arabica.async.HttpParser;
 import org.kava.arabica.http.ArabicaHttpRequest;
 import org.kava.arabica.http.ArabicaHttpResponse;
-import org.kava.arabica.http.HttpVersion;
-import org.kava.arabica.servlet.ArabicaServlet;
-import org.kava.arabica.servlet.ArabicaServletURI;
 import org.kava.arabica.utils.IOThrowingSupplier;
 import org.kava.arabica.utils.PropertyLoader;
 import org.kava.arabica.utils.ThrowingRunnable;
+import org.kava.lungo.Level;
 import org.kava.lungo.Logger;
 import org.kava.lungo.LoggerFactory;
 
@@ -21,10 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
-import java.net.http.HttpHeaders;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -43,8 +43,11 @@ public class ServletContainer {
     public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
     private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
+    {
+        logger.setLevel(Level.TRACE);
+    }
     private final ExecutorService executorService;
-    private final Map<String, ArabicaServlet> servlets = new HashMap<>();
+    private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
     private final ReentrantLock lock = new ReentrantLock();
     private final IOThrowingSupplier<Selector> selectorSupplier;
@@ -76,15 +79,22 @@ public class ServletContainer {
         this(port, Selector::open, ServerSocketChannel::open);
     }
 
-    public void registerServlet(Class<? extends ArabicaServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        ArabicaServlet servlet = clazz.getDeclaredConstructor().newInstance();
-        var isServlet = clazz.isAnnotationPresent(ArabicaServletURI.class);
+    public void registerServlet(Class<? extends HttpServlet> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        var servlet = clazz.getDeclaredConstructor().newInstance();
+        var isServlet = clazz.isAnnotationPresent(WebServlet.class);
         if (isServlet) {
-            var uri = clazz.getAnnotation(ArabicaServletURI.class);
+            var uri = clazz.getAnnotation(WebServlet.class);
             logger.info("Registering new servlet: '%s' '%s'", uri.value(), servlet);
-            servlets.put(uri.value(), servlet);
+            var uris = uri.value();
+            var allUnique = Arrays.stream(uris).noneMatch(servlets::containsKey);
+            if (allUnique) {
+                Arrays.stream(uris).forEach(_uri -> servlets.put(_uri, servlet));
+            } else {
+                throw new IllegalAccessException("Servlet already registered for URI.");
+            }
         } else {
-            logger.error("Servlet '%s' is not annotated with '%s'. Skipping.", clazz.getName(), ArabicaServletURI.class.getName());
+            logger.error("Servlet '%s' is not annotated with '%s'.", clazz.getName(), WebServlet.class.getName());
+            throw new IllegalArgumentException("Servlet is not annotated with @WebServlet.");
         }
     }
 
@@ -164,7 +174,7 @@ public class ServletContainer {
                         selector.wakeup();
                         logger.debug("Registered client %s for writing", client);
                     } catch (URISyntaxException | InvocationTargetException | IllegalAccessException |
-                             ClosedChannelException e) {
+                             ServletException | IOException e) {
                         logger.error("Error handling request: %s %s %s", method, path, version);
                         throw new RuntimeException(e);
                     } catch (RuntimeException e) {
@@ -183,8 +193,7 @@ public class ServletContainer {
         }
     }
 
-    private void handleHTTP(HttpParser parser, CyclicBuffer output) throws URISyntaxException, InvocationTargetException, IllegalAccessException {
-        var method = parser.getMethod();
+    private void handleHTTP(HttpParser parser, CyclicBuffer output) throws URISyntaxException, InvocationTargetException, IllegalAccessException, ServletException, IOException {
         var path = parser.getPath();
 
         var servlet = servlets.get(path);
@@ -194,16 +203,11 @@ public class ServletContainer {
         }
 
         var request = generateRequest(parser);
-        var response = new ArabicaHttpResponse();
-        response.modifyHeaders().put("Content-Type", List.of("text/html"));
-        response.modifyHeaders().put("Connection", List.of("keep-alive"));
+        var response = new ArabicaHttpResponse(request);
+        response.setContentType("text/html");
+        response.addHeader("Connection", "keep-alive");
 
-        var methodName = named("do${method}", args("method", method));
-        var handlerClass = servlet.getClass();
-        var handlerMethod = Arrays.stream(handlerClass.getMethods())
-                .filter(_method -> _method.getName().equals(methodName))
-                .findAny().orElseThrow();
-        handlerMethod.invoke(servlet, request, response);
+        servlet.service(request, response);
 
         writeResponseToBuffer(response, output);
     }
@@ -212,31 +216,28 @@ public class ServletContainer {
         final var CRLF = "\r\n".getBytes();
 
         var firstLine = named("${version} ${status} ${code}",
-                args("version", HttpVersion.of(response.version()),
-                        "status", response.statusCode(),
-                        "code", "OK"));
+                args("version", response.getRequest().getProtocol(),
+                        "status", response.getStatus(),
+                        "code", response.getMessage()));
         output.putExtend(firstLine.getBytes());
         output.putExtend(CRLF);
 
-        var headers = joinHeaders(response.headers());
+        var headers = joinHeaders(response.getHeaders());
         output.putExtend(headers.getBytes());
         output.putExtend(CRLF);
         output.putExtend(CRLF);
 
-        if (response.hasRawBody()) {
-            output.putExtend(response.rawBody());
-        } else if (response.hasBody()) {
-            output.putExtend(response.body().getBytes(StandardCharsets.UTF_8));
-        }
+        var bodyBuffer = response.getArabicaOutputStream().getBuffer();
+        output.putExtend(bodyBuffer.get(bodyBuffer.getUsedSpace()));
     }
 
-    private String joinHeaders(HttpHeaders headers) {
-        return headers.map().entrySet().stream()
+    private String joinHeaders(Map<String, List<String>> headers) {
+        return headers.entrySet().stream()
                 .map(entry -> format("%s: %s", entry.getKey(), String.join(", ", entry.getValue())))
                 .collect(Collectors.joining("\r\n"));
     }
 
-    private ArabicaHttpRequest generateRequest(HttpParser parser) throws URISyntaxException {
+    private HttpServletRequest generateRequest(HttpParser parser) throws URISyntaxException {
         var method = parser.getMethod();
         var path = parser.getPath();
         var version = parser.getVersion();
@@ -244,11 +245,12 @@ public class ServletContainer {
         var headers = parser.getHeaders();
         var body = parser.getBody();
 
-        var parsedHeaders = HttpHeaders.of(headers, (k, v) -> true);
-        return new ArabicaHttpRequest(method, path, version, parsedHeaders, body);
+        return new ArabicaHttpRequest(method, path, version, headers, body);
     }
 
     private void handleSelectors(Selector selector, ServerSocketChannel channel) throws IOException {
+        // If data was written, and we missed the opportunity to wake up the selector, we need to do it manually,
+        //  so we time out every 1000ms.
         if (selector.select(1000) <= 0) {
             return;
         }
