@@ -42,7 +42,9 @@ public class ServletContainer {
     public static final int DEFAULT_PORT = 40301;
     public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
 
-    private final Logger logger = LoggerFactory.getLogger(ServletContainer.class);
+    public static final Level LOG_LEVEL = PropertyLoader.loadEnum("arabica.container.log.level", Level.DEBUG, Level.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ServletContainer.class, LOG_LEVEL);
     private final ExecutorService executorService;
     private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
