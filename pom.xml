@@ -53,7 +53,7 @@
         <dependency>
             <groupId>com.github.jaks-mimuw-kava-org</groupId>
             <artifactId>Lungo</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
