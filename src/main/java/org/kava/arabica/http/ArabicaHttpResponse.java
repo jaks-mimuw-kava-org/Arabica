@@ -24,6 +24,9 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     private String message;
     private PrintWriter writer = null;
 
+    @Getter
+    private boolean isReady = false;
+
     public ArabicaHttpResponse(HttpServletRequest request) {
         this.request = request;
     }
@@ -106,6 +109,12 @@ public class ArabicaHttpResponse implements HttpServletResponse {
         this.statusCode = sc;
         this.message = getMessageOfCode(sc);
     }
+
+    public void ready() {
+        this.isReady = true;
+    }
+
+
 
     private String getMessageOfCode(int sc) {
         return switch(sc) {

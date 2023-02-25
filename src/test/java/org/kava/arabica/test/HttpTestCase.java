@@ -10,7 +10,7 @@ import static org.kava.arabica.utils.StringFormatter.named;
 
 public record HttpTestCase(TestRequest request, TestResponse response) {
 
-    public void run(TestEnvironment env, int clientIndex) {
+    public void run(TestEnvironment env, int clientIndex, long sleepTime) {
         var client = env.testClients()[clientIndex];
 
         { // Sending the request
@@ -31,6 +31,9 @@ public record HttpTestCase(TestRequest request, TestResponse response) {
 
             sendLine(client, "");
             send(client, this.request().body());
+        }
+        if (sleepTime > 0) {
+            noThrow(() -> Thread.sleep(sleepTime));
         }
         { // Checking the result
             var expected = named("${version} ${status} ${reason}\r\n", args(

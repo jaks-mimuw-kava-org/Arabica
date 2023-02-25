@@ -40,7 +40,7 @@ import static org.kava.arabica.utils.StringFormatter.named;
 public class ServletContainer {
 
     public static final int DEFAULT_PORT = 40301;
-    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
+    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 1);
 
     public static final Level LOG_LEVEL = PropertyLoader.loadEnum("arabica.container.log.level", Level.DEBUG, Level.class);
 
@@ -224,14 +224,35 @@ public class ServletContainer {
             return;
         }
 
-        var request = generateRequest(parser);
+        var request = (ArabicaHttpRequest) generateRequest(parser);
+
+        var uri = servlet.getClass().getAnnotation(WebServlet.class);
+
         var response = new ArabicaHttpResponse(request);
         response.setContentType("text/html");
         response.addHeader("Connection", "keep-alive");
 
         servlet.service(request, response);
 
-        writeResponseToBuffer(response, output);
+
+        if (!uri.asyncSupported()) {
+            writeResponseToBuffer(response, output);
+        }
+        else {
+            new Thread(() -> {
+                synchronized (response) {
+                    try {
+                        response.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                operateUnderLock(() -> {
+                    writeResponseToBuffer(response, output);
+                    return 0;
+                });
+            }).start();
+        }
     }
 
     private void writeResponseToBuffer(ArabicaHttpResponse response, CyclicBuffer output) {

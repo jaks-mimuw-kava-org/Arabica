@@ -13,16 +13,24 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.security.Principal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ArabicaHttpRequest implements HttpServletRequest {
     private final Method method;
+
     private final URI uri;
+
     private final HttpClient.Version version;
 
     private final ArabicaServletInputStream inputStream;
+
     private final byte[] body;
 
     private final Map<String, List<String>> headers;
+
+    private AsyncContext asyncContext;
+
+    private final AtomicBoolean asyncStarted;
 
     public ArabicaHttpRequest(String method, String uri, String version, Map<String, List<String>> headers, byte[] body) throws URISyntaxException {
         this.method = Method.of(method);
@@ -31,6 +39,7 @@ public class ArabicaHttpRequest implements HttpServletRequest {
         this.inputStream = new ArabicaServletInputStream(CyclicBuffer.of(body));
         this.body = body;
         this.headers = headers;
+        this.asyncStarted = new AtomicBoolean(false);
     }
 
     @Override
@@ -344,29 +353,39 @@ public class ArabicaHttpRequest implements HttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
+    // TODO: Karol's part:
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return startAsync(this, null);
     }
 
+    // TODO: Karol's part:
     @Override
-    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+    public AsyncContext startAsync(ServletRequest req, ServletResponse res) throws IllegalStateException {
+        this.asyncContext = new ArabicaAsyncContext(req, res);
+        return this.asyncContext;
     }
 
+    // TODO: Karol's part:
     @Override
     public boolean isAsyncStarted() {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return this.asyncStarted.get();
     }
 
+    public void setAsyncStarted(boolean value) {
+        this.asyncStarted.set(value);
+    }
+
+    // TODO: Karol's part:
     @Override
     public boolean isAsyncSupported() {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return true;
     }
 
+    // TODO: Karol's part:
     @Override
     public AsyncContext getAsyncContext() {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return this.asyncContext;
     }
 
     @Override

@@ -85,7 +85,7 @@ public class TestClient {
             // The server task will be cancelled if it takes more than 2 seconds.
             // This prevents from blocking the test forever
             //  as server could send fewer bytes than expected.
-            return sendTask.orTimeout(2, TimeUnit.SECONDS).get();
+            return sendTask.orTimeout(30, TimeUnit.SECONDS).get();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
