@@ -17,6 +17,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -41,16 +42,18 @@ public class ArabicaHttpResponse implements HttpServletResponse {
 
     private final SocketChannel channel;
 
+    private final ReentrantLock lock;
     @Getter
     @Setter
     private boolean isReady;
 
-    public ArabicaHttpResponse(HttpServletRequest request, Selector selector, Client client, SocketChannel channel) {
+    public ArabicaHttpResponse(HttpServletRequest request, Selector selector, Client client, SocketChannel channel, ReentrantLock asyncLock) {
         this.request = (ArabicaHttpRequest) request;
         this.selector = selector;
         this.channel = channel;
         this.client = client;
         this.isReady = false;
+        this.lock = asyncLock;
     }
 
     @Override
@@ -307,6 +310,13 @@ public class ArabicaHttpResponse implements HttpServletResponse {
         this.isReady = true;
     }
 
+    public void lock() {
+        this.lock.lock();
+    }
+
+    public void unlock() {
+        this.lock.unlock();
+    }
     public void sendToClient() throws ClosedChannelException {
         final var CRLF = "\r\n".getBytes();
         var output = client.getOutput();

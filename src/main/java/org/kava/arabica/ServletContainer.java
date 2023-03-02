@@ -3,7 +3,6 @@ package org.kava.arabica;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +42,8 @@ public class ServletContainer {
     private final Map<String, HttpServlet> servlets = new HashMap<>();
     @Getter(AccessLevel.PRIVATE)
     private final ReentrantLock lock = new ReentrantLock();
+
+    private final ReentrantLock asyncLock = new ReentrantLock();
     private final IOThrowingSupplier<Selector> selectorSupplier;
     private final IOThrowingSupplier<ServerSocketChannel> serverSocketChannelSupplier;
     private final ConcurrentHashMap<SocketChannel, Client> clients = new ConcurrentHashMap<>();
@@ -218,17 +219,18 @@ public class ServletContainer {
         }
 
         var isAsyncSupported = servlet.getClass().getAnnotation(WebServlet.class).asyncSupported();
-
         var request = generateRequest(parser, isAsyncSupported);
-        var response = new ArabicaHttpResponse(request, selector, client, channel);
+        var response = new ArabicaHttpResponse(request, selector, client, channel, asyncLock);
         response.setContentType("text/html");
         response.addHeader("Connection", "keep-alive");
 
         servlet.service(request, response);
 
         if (!isAsyncSupported) {
+            asyncLock.lock();
             response.sendToClient();
             client.setHandled(true);
+            asyncLock.unlock();
         }
     }
 

@@ -62,20 +62,19 @@ public class ArabicaAsyncContext implements AsyncContext {
     public void complete() {
         this.response.ready();
         this.request.setAsyncCompleted(true);
-        try {
-            response.sendToClient();
-            this.task = this.task.thenApply((Void t) -> {
-                try {
-                    this.response.sendToClient();
-                } catch (ClosedChannelException e) {
-                    throw new RuntimeException(e);
-                }
-                return null;
-            });
-        }
-        catch (ClosedChannelException err) {
-            err.printStackTrace();
-        }
+
+        this.task = this.task.thenApply((Void t) -> {
+            try {
+                this.response.lock();
+                this.response.sendToClient();
+                this.response.unlock();
+            } catch (ClosedChannelException e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        });
+
+
         for (var listener : listeners) {
             try {
                 listener.onComplete(new AsyncEvent(this));
