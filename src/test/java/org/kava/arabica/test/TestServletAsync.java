@@ -11,6 +11,7 @@ import org.asynchttpclient.*;
 import org.kava.arabica.http.ArabicaAsyncListener;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @WebServlet(value = "/async_reverse", asyncSupported = true)
 public class TestServletAsync extends HttpServlet {
@@ -30,7 +31,7 @@ public class TestServletAsync extends HttpServlet {
     private void remoteReverse(AsyncContext asyncContext, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var client = Dsl.asyncHttpClient();
 
-        var request = client.prepareGet("https://6wrlmkp9u2.execute-api.us-east-1.amazonaws.com/?sleep=200");
+        var request = client.prepareGet("https://6wrlmkp9u2.execute-api.us-east-1.amazonaws.com/?sleep=20000");
 
         request.execute(new AsyncCompletionHandler<>() {
             @Override

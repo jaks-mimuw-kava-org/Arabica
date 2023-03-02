@@ -18,7 +18,7 @@ public class ArabicaAsyncListener implements AsyncListener {
 
     @Override
     public void onComplete(AsyncEvent asyncEvent) throws IOException {
-        logger.info("Servlet async completed.");
+        logger.info(String.format("Servlet async completed: '%s'", Thread.currentThread().getName()));
     }
 
     @Override
@@ -33,6 +33,6 @@ public class ArabicaAsyncListener implements AsyncListener {
 
     @Override
     public void onStartAsync(AsyncEvent asyncEvent) throws IOException {
-        logger.info("Servlet async started.");
+        logger.info(String.format("Servlet async started: '%s'", Thread.currentThread().getName()));
     }
 }
