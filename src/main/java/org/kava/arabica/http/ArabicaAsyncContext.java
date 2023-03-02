@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
 
 public class ArabicaAsyncContext implements AsyncContext {
     private static final long DEFAULT_TIMEOUT = 60 * 1000L;
@@ -17,7 +16,6 @@ public class ArabicaAsyncContext implements AsyncContext {
 
     private final List<AsyncListener> listeners;
 
-    private CompletableFuture<Void> task;
 
     private long timeout;
 
@@ -63,17 +61,13 @@ public class ArabicaAsyncContext implements AsyncContext {
         this.response.ready();
         this.request.setAsyncCompleted(true);
 
-        this.task = this.task.thenApply((Void t) -> {
-            try {
-                this.response.lock();
-                this.response.sendToClient();
-                this.response.unlock();
-            } catch (ClosedChannelException e) {
-                throw new RuntimeException(e);
-            }
-            return null;
-        });
-
+        try {
+            this.response.lock();
+            this.response.sendToClient();
+            this.response.unlock();
+        } catch (ClosedChannelException e) {
+            throw new RuntimeException(e);
+        }
 
         for (var listener : listeners) {
             try {
@@ -87,10 +81,9 @@ public class ArabicaAsyncContext implements AsyncContext {
 
     @Override
     public void start(Runnable runnable) {
-        this.task = CompletableFuture.supplyAsync(() -> {
-            runnable.run();
-            return null;
-        });
+
+        runnable.run();
+
         for (var listener : listeners) {
             try {
                 listener.onStartAsync(new AsyncEvent(this));

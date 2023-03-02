@@ -1,34 +1,51 @@
 package org.kava.arabica.test;
 
+import io.netty.handler.codec.http.HttpHeaders;
+import jakarta.servlet.AsyncContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.asynchttpclient.*;
 import org.kava.arabica.http.ArabicaAsyncListener;
 
 import java.io.IOException;
-import java.net.Socket;
 
 @WebServlet(value = "/async_reverse", asyncSupported = true)
 public class TestServletAsync extends HttpServlet {
 
-    private static final int REMOTE_PORT = 10000;
-
-
-    private byte[] remoteReverse(byte[] bytes) throws IOException {
-        try (var socket = new Socket("localhost", REMOTE_PORT)) {
-            var inputStream = socket.getInputStream();
-            var outputStream = socket.getOutputStream();
-            outputStream.write((byte) bytes.length);
-            outputStream.write(bytes);
-            outputStream.write((byte) bytes.length);
-
-            return inputStream.readAllBytes();
+    private void reverse(byte[] arr) {
+        int b = 0;
+        int e = arr.length - 1;
+        while (b < e) {
+            byte temp = arr[b];
+            arr[b] = arr[e];
+            arr[e] = temp;
+            b++;
+            e--;
         }
-        catch (IOException err) {
-            throw new IOException();
-        }
+    }
+
+    private void remoteReverse(AsyncContext asyncContext, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var client = Dsl.asyncHttpClient();
+
+        var request = client.prepareGet("https://6wrlmkp9u2.execute-api.us-east-1.amazonaws.com/?sleep=500");
+
+        request.execute(new AsyncCompletionHandler<>() {
+            @Override
+            public Object onCompleted(Response response) throws Exception {
+                var body = req.getInputStream().readAllBytes();
+                reverse(body);
+                resp.getOutputStream().write(body);
+                resp.setContentLength(body.length);
+                resp.setContentType("text/plain");
+                resp.setStatus(200);
+                asyncContext.complete();
+                return response;
+            }
+        });
+
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,17 +53,11 @@ public class TestServletAsync extends HttpServlet {
         asyncContext.addListener(new ArabicaAsyncListener());
         asyncContext.start(() -> {
             try {
-                var body = req.getInputStream().readAllBytes();
-                body = remoteReverse(body);
-                resp.getOutputStream().write(body);
-                resp.setContentLength(body.length);
-                resp.setContentType("text/plain");
-                resp.setStatus(200);
+                remoteReverse(asyncContext, req, resp);
             }
             catch (IOException err) {
                 resp.setStatus(418);
             }
-            asyncContext.complete();
         });
     }
 }

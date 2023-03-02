@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 public class ServletContainer {
 
     public static final int DEFAULT_PORT = 40301;
-    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 1);
+    public static final Integer WORKERS = 1;
 
     public static final Level LOG_LEVEL = PropertyLoader.loadEnum("arabica.container.log.level", Level.DEBUG, Level.class);
 
@@ -227,10 +227,8 @@ public class ServletContainer {
         servlet.service(request, response);
 
         if (!isAsyncSupported) {
-            asyncLock.lock();
             response.sendToClient();
             client.setHandled(true);
-            asyncLock.unlock();
         }
     }
 
