@@ -2,6 +2,8 @@ package org.kava.arabica.http;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.kava.arabica.async.ArabicaServletInputStream;
 import org.kava.arabica.async.CyclicBuffer;
 
@@ -22,6 +24,15 @@ public class ArabicaHttpRequest implements HttpServletRequest {
     private final ArabicaServletInputStream inputStream;
     private final byte[] body;
 
+    @Setter
+    private boolean asyncStarted;
+
+    @Getter
+    @Setter
+    private boolean asyncCompleted;
+
+    private boolean asyncSupported;
+
     private final Map<String, List<String>> headers;
 
     public ArabicaHttpRequest(String method, String uri, String version, Map<String, List<String>> headers, byte[] body) throws URISyntaxException {
@@ -31,6 +42,15 @@ public class ArabicaHttpRequest implements HttpServletRequest {
         this.inputStream = new ArabicaServletInputStream(CyclicBuffer.of(body));
         this.body = body;
         this.headers = headers;
+    }
+
+    public ArabicaHttpRequest(String method, String uri, String version, Map<String, List<String>> headers, byte[] body, boolean isAsyncSupported) throws URISyntaxException {
+        this(method, uri, version, headers, body);
+        this.asyncSupported = isAsyncSupported;
+        if (this.asyncSupported) {
+            this.asyncStarted = false;
+            this.asyncCompleted = false;
+        }
     }
 
     @Override
@@ -344,24 +364,32 @@ public class ArabicaHttpRequest implements HttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
+    // Karol's part
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        if (!this.asyncSupported) {
+            throw new IllegalStateException();
+        }
+        return this.startAsync(this, null);
     }
 
+    // Karol's part
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        this.asyncStarted = true;
+        return new ArabicaAsyncContext(servletRequest, servletResponse);
     }
 
+    // Karol's part
     @Override
     public boolean isAsyncStarted() {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return this.asyncStarted;
     }
 
+    // Karol's part
     @Override
     public boolean isAsyncSupported() {
-        throw new UnsupportedOperationException(); // TODO: Karol's part I guess
+        return this.asyncSupported;
     }
 
     @Override

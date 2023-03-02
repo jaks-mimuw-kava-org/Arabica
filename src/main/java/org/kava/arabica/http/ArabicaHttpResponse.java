@@ -5,16 +5,27 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
+import lombok.Setter;
 import org.kava.arabica.async.ArabicaServletOutputStream;
+import org.kava.arabica.async.Client;
 import org.kava.arabica.async.CyclicBuffer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.kava.arabica.utils.StringFormatter.args;
+import static org.kava.arabica.utils.StringFormatter.named;
 
 public class ArabicaHttpResponse implements HttpServletResponse {
     @Getter
-    private final HttpServletRequest request;
+    private final ArabicaHttpRequest request;
     private final ArabicaServletOutputStream outputStream = new ArabicaServletOutputStream(new CyclicBuffer(1024));
     @Getter
     private final Map<String, List<String>> headers = new HashMap<>();
@@ -24,8 +35,22 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     private String message;
     private PrintWriter writer = null;
 
-    public ArabicaHttpResponse(HttpServletRequest request) {
-        this.request = request;
+    private final Selector selector;
+
+    private final Client client;
+
+    private final SocketChannel channel;
+
+    @Getter
+    @Setter
+    private boolean isReady;
+
+    public ArabicaHttpResponse(HttpServletRequest request, Selector selector, Client client, SocketChannel channel) {
+        this.request = (ArabicaHttpRequest) request;
+        this.selector = selector;
+        this.channel = channel;
+        this.client = client;
+        this.isReady = false;
     }
 
     @Override
@@ -276,5 +301,40 @@ public class ArabicaHttpResponse implements HttpServletResponse {
     @Override
     public void setLocale(Locale loc) {
         throw new UnsupportedOperationException();
+    }
+
+    public void ready() {
+        this.isReady = true;
+    }
+
+    public void sendToClient() throws ClosedChannelException {
+        final var CRLF = "\r\n".getBytes();
+        var output = client.getOutput();
+
+        var firstLine = named("${version} ${status} ${code}",
+                args("version", getRequest().getProtocol(),
+                        "status", getStatus(),
+                        "code", getMessage()));
+
+        output.putExtend(firstLine.getBytes());
+        output.putExtend(CRLF);
+
+        var headers = joinHeaders();
+        output.putExtend(headers.getBytes());
+        output.putExtend(CRLF);
+        output.putExtend(CRLF);
+
+        var bodyBuffer = getArabicaOutputStream().getBuffer();
+
+        output.putExtend(bodyBuffer.get(bodyBuffer.getUsedSpace()));
+        channel.register(selector, SelectionKey.OP_WRITE);
+        selector.wakeup();
+        client.setHandled(true);
+    }
+
+    private String joinHeaders() {
+        return headers.entrySet().stream()
+                .map(entry -> format("%s: %s", entry.getKey(), String.join(", ", entry.getValue())))
+                .collect(Collectors.joining("\r\n"));
     }
 }

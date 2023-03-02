@@ -3,12 +3,11 @@ package org.kava.arabica;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.kava.arabica.async.Client;
-import org.kava.arabica.async.CyclicBuffer;
 import org.kava.arabica.async.HttpParser;
 import org.kava.arabica.http.ArabicaHttpRequest;
 import org.kava.arabica.http.ArabicaHttpResponse;
@@ -31,16 +30,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static org.kava.arabica.utils.StringFormatter.args;
-import static org.kava.arabica.utils.StringFormatter.named;
 
 public class ServletContainer {
 
     public static final int DEFAULT_PORT = 40301;
-    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 10);
+    public static final Integer WORKERS = PropertyLoader.loadInteger("arabica.container.workers", 1);
 
     public static final Level LOG_LEVEL = PropertyLoader.loadEnum("arabica.container.log.level", Level.DEBUG, Level.class);
 
@@ -52,6 +46,7 @@ public class ServletContainer {
     private final IOThrowingSupplier<Selector> selectorSupplier;
     private final IOThrowingSupplier<ServerSocketChannel> serverSocketChannelSupplier;
     private final ConcurrentHashMap<SocketChannel, Client> clients = new ConcurrentHashMap<>();
+
     @Getter
     private ThrowingRunnable onStop = null;
     @Getter
@@ -190,22 +185,19 @@ public class ServletContainer {
                 executorService.submit(() -> {
                     try {
                         logger.debug("Handling request: %s %s %s", method, path, version);
-                        handleHTTP(client.getParser(), client.getOutput());
-                        logger.debug("Request handled");
-                        channel.register(selector, SelectionKey.OP_WRITE);
-                        selector.wakeup();
-                        logger.debug("Registered client %s for writing", client);
+                        handleClient(client, channel, selector);
                     } catch (URISyntaxException | InvocationTargetException | IllegalAccessException |
                              ServletException | IOException e) {
                         logger.error("Error handling request: %s %s %s", method, path, version);
+                        client.setHandled(true);
                         throw new RuntimeException(e);
                     } catch (RuntimeException e) {
                         logger.error("Error handling request: %s %s %s", method, path, version);
                         logger.error("%s", e.getMessage());
                         e.printStackTrace();
+                        client.setHandled(true);
                         throw e;
                     }
-                    client.setHandled(true);
                 });
 
                 client.setSentToBeHandled(true);
@@ -215,7 +207,8 @@ public class ServletContainer {
         }
     }
 
-    private void handleHTTP(HttpParser parser, CyclicBuffer output) throws URISyntaxException, InvocationTargetException, IllegalAccessException, ServletException, IOException {
+    private void handleClient(Client client, SocketChannel channel, Selector selector) throws URISyntaxException, InvocationTargetException, IllegalAccessException, ServletException, IOException {
+        var parser = client.getParser();
         var path = parser.getPath();
 
         var servlet = servlets.get(path);
@@ -224,42 +217,22 @@ public class ServletContainer {
             return;
         }
 
-        var request = generateRequest(parser);
-        var response = new ArabicaHttpResponse(request);
+        var isAsyncSupported = servlet.getClass().getAnnotation(WebServlet.class).asyncSupported();
+
+        var request = generateRequest(parser, isAsyncSupported);
+        var response = new ArabicaHttpResponse(request, selector, client, channel);
         response.setContentType("text/html");
         response.addHeader("Connection", "keep-alive");
 
         servlet.service(request, response);
 
-        writeResponseToBuffer(response, output);
+        if (!isAsyncSupported) {
+            response.sendToClient();
+            client.setHandled(true);
+        }
     }
 
-    private void writeResponseToBuffer(ArabicaHttpResponse response, CyclicBuffer output) {
-        final var CRLF = "\r\n".getBytes();
-
-        var firstLine = named("${version} ${status} ${code}",
-                args("version", response.getRequest().getProtocol(),
-                        "status", response.getStatus(),
-                        "code", response.getMessage()));
-        output.putExtend(firstLine.getBytes());
-        output.putExtend(CRLF);
-
-        var headers = joinHeaders(response.getHeaders());
-        output.putExtend(headers.getBytes());
-        output.putExtend(CRLF);
-        output.putExtend(CRLF);
-
-        var bodyBuffer = response.getArabicaOutputStream().getBuffer();
-        output.putExtend(bodyBuffer.get(bodyBuffer.getUsedSpace()));
-    }
-
-    private String joinHeaders(Map<String, List<String>> headers) {
-        return headers.entrySet().stream()
-                .map(entry -> format("%s: %s", entry.getKey(), String.join(", ", entry.getValue())))
-                .collect(Collectors.joining("\r\n"));
-    }
-
-    private HttpServletRequest generateRequest(HttpParser parser) throws URISyntaxException {
+    private ArabicaHttpRequest generateRequest(HttpParser parser, boolean isAsyncSupported) throws URISyntaxException {
         var method = parser.getMethod();
         var path = parser.getPath();
         var version = parser.getVersion();
@@ -267,7 +240,7 @@ public class ServletContainer {
         var headers = parser.getHeaders();
         var body = parser.getBody();
 
-        return new ArabicaHttpRequest(method, path, version, headers, body);
+        return new ArabicaHttpRequest(method, path, version, headers, body, isAsyncSupported);
     }
 
     private void handleSelectors(Selector selector, ServerSocketChannel channel) throws IOException {
