@@ -31,7 +31,7 @@ public class TestServletSleepAsync extends HttpServlet {
         private void remoteReverse(AsyncContext asyncContext, HttpServletRequest req, HttpServletResponse resp) throws IOException {
             var client = Dsl.asyncHttpClient();
 
-            var request = client.prepareGet("https://6wrlmkp9u2.execute-api.us-east-1.amazonaws.com/?sleep=500");
+            var request = client.prepareGet("https://6wrlmkp9u2.execute-api.us-east-1.amazonaws.com/?sleep=2000");
 
             try {
                 Thread.sleep(1000);
